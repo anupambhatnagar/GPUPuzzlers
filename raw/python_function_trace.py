@@ -5,55 +5,55 @@ import numpy as np
 import torch
 from torch.autograd.profiler import profile
 
-# Disable tensorcore so that it doesn't cause streams to block.
-torch.backends.cuda.matmul.allow_tf32 = False
-torch.backends.cudnn.allow_tf32 = False
-
 N = 1000
 
-# Mimicing host-side IO/preprocessing.
+# Mimics host-side I/O and preprocessing.
 def create_sorted_random_tensor(size):
-    L = []
-    L = np.random.rand(N,N)
-    L.sort(0)
-    result = torch.tensor(L)
+    # It's more convenient to use numpy to create and 
+    # manipulate random tensors.
+    data = np.random.rand(N,N)
+    # Sort data, treating it as an array of vectors.
+    data.sort(0)
+    # Convert to torch tensor (on CPU).
+    result = torch.tensor(data)
     return result
 
-# Mimicing host-side simple statistics generation.
-def gen_stats(T):
-    T_np = T.numpy()
+
+# Mimics host-side statistics generation.
+def sampled_average(T, num_samples_per_row):
+    T_np = T.numpy() # Prefer to work on numpy arrays.
     total = 0.0
-    for _ in range(10):
-        # Get a random entry per row, and sum them up
+    for _ in range(num_samples_per_row):
+        # Get a random entry per row by first selecting N
+        # random indices, one per row.
         sample_indices = np.random.randint(0, high=N, size=N)
         # https://stackoverflow.com/questions/23435782/
         samples = np.take_along_axis(T_np, sample_indices[:,None], axis=1)
         total = sum(samples)
-    return total
+    return total/(N*num_samples_per_row)
+
 
 def do_work():
-    start_time = time.time()
     L = create_sorted_random_tensor(N)
     L = L.to(device='cuda')
+    # Do an inplace matmul.
     torch.mm(L, L, out=L)
-    #Lcpu = L.to(device='cpu')
-    #stats = gen_stats(Lcpu)
-    stats = gen_stats(L.cpu())
+    stats_before = sampled_average(L.cpu(), 10)
     torch.add(L, L, out=L)
+    stats_after = sampled_average(L.cpu(), 10)
     torch.cuda.synchronize()
-    end_time = time.time()
-    return end_time - start_time, stats
+    return stats_before, stats_after
 
 # Warmup.
 do_work()
 
 with profile(use_cuda=True, use_kineto=True, record_shapes=True, with_stack=False) as p:
-    print("no stack, time = " + str(do_work()))
+    print("no stack, stats = " + str(do_work()))
 filename = f"./N={N}-python_function_tracing-nostack.trace.json"
 p.export_chrome_trace(filename)
 
 with profile(use_cuda=True, use_kineto=True, record_shapes=True, with_stack=True) as p:
-    print("with stack, time = " + str(do_work()))
+    print("with stack, stats = " + str(do_work()))
 filename = f"./N={N}-python_function_tracing-stack.trace.json"
 p.export_chrome_trace(filename)
 
