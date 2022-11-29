@@ -6,53 +6,65 @@ import torch
 from torch.autograd.profiler import profile
 
 '''
-Shows how a d2h leads to queue flush and by extension, a performance hit.
-
-TODO:
- - Add something showing how large gemm followed by smaller ones is better
-   then smaller ones then larger (because launch queue can fill up)
+Shows how queuing order and RAW hazards impact performance.
 '''
 
-# Disable tensorcore so that it doesn't cause streams to block.
-torch.backends.cuda.matmul.allow_tf32 = False
-torch.backends.cudnn.allow_tf32 = False
-
-N = 10000
+N = 1600
 M = 100
-#num_launches_base = 400
 num_launches_base = 1
+DELAY = 1e-2 # In seconds.
 
 cuda = torch.device('cuda')
-torch.cuda.set_sync_debug_mode(1)
 
-# Create streams that we'll use to execute in parallel. This is not a 
-# common use case: usually everything is executed in the default stream, 
-# which has id 7.)
+# set_sync_debug_mode() is a recent experimental feature; it can 
+# help debug the challenges we'll be looking at in this exercise.
+# torch.cuda.set_sync_debug_mode(1)
 
-s,t,u = [torch.cuda.Stream() for _ in range(3)]
-
-# Use different size matrices to identify calls on CPU side in Kineto trace.
+# Allocate a big and small matrix, and a small 1d tensor:
 A = torch.rand((N,N), device='cuda')
 B = torch.rand((M,M), device='cuda')
-C = torch.rand(N*N, device='cuda')
+C = torch.rand(M, device='cuda')
 
-tmp = torch.rand(3, device="cuda")
+s = torch.cuda.Stream()
 
 def do_work(X, Y, Z):
     start_time = time.time()
     for i in range(num_launches_base):
         with torch.cuda.stream(s):
+
+            # Challenge 1: which block is faster?
+
+            # Block 1
+            for j in range(10):
+                torch.matmul(B,B)
             torch.matmul(A,A) 
+            torch.cuda.synchronize()
+            time.sleep(DELAY)
+
+            # Block 2: reverse order of big gemm and small gemms
+            torch.matmul(A,A) 
+            for j in range(10):
+                torch.matmul(B,B)
+            time.sleep(DELAY)
+            torch.cuda.synchronize()
+
+            # Challenge 2: why is second set of small gemms slower?
+            torch.matmul(A,A) 
+            # Set 1
             for j in range(10):
                 torch.matmul(B,B)
             C.to('cpu')
+            # Avoid the stall by using non_blocking=True (but opens
+            # you up to potential races).
+            # More details here: https://pytorch.org/docs/stable/notes/cuda.html#use-pinned-memory-buffers
+            #C.to('cpu', non_blocking=True)
+
+            # Set 2
             for j in range(10):
                 torch.matmul(B,B)
-            time.sleep(0.2)
-            for j in range(20):
-                torch.matmul(B,B)
-            torch.matmul(A,A) 
-            time.sleep(0.2)
+            time.sleep(DELAY)
+            torch.cuda.synchronize()
+
     C.cumsum(dim=0)
     torch.cuda.synchronize()
     end_time = time.time()
@@ -61,26 +73,12 @@ def do_work(X, Y, Z):
 # Warmup.
 do_work(A, B, C)
 
-'''
-with profile(use_cuda=True, use_kineto=True, record_shapes=False) as p:
+with profile(use_cuda=True, use_kineto=True, 
+                record_shapes=True, with_stack=True) as p:
     time_taken = do_work(A, B, C)
-print("with profiler = " + str(time_taken))
 
-with profile(use_cuda=True, use_kineto=True, record_shapes=True) as p:
-    time_taken = do_work(A, B, C)
-print("with profiler & record_shapes = " + str(time_taken))
+print(f"Time with profiler & with_stack & record_shapes = {str(time_taken)}")
 
-'''
-with profile(use_cuda=True, use_kineto=True, record_shapes=True, with_stack=True) as p:
-    time_taken = do_work(A, B, C)
-print("with profiler & with_stack & record_shapes = " + str(time_taken))
-
-#time_taken = do_work(A, B, C)
-#print("without profiler = " + str(time_taken))
-
-
-print("N = " + str(N))
-
-filename = f"./N={N}-gaps.trace.json"
+filename = f"./N={N}-cuda-queue-puzzlers.trace.json"
 p.export_chrome_trace(filename)
 print("printed to " + filename)
