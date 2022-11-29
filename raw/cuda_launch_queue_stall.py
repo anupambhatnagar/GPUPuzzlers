@@ -5,6 +5,14 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
+'''
+Shows how a d2h leads to queue flush and by extension, a performance hit.
+
+TODO:
+ - Add something showing how large gemm followed by smaller ones is better
+   then smaller ones then larger (because launch queue can fill up)
+'''
+
 # Disable tensorcore so that it doesn't cause streams to block.
 torch.backends.cuda.matmul.allow_tf32 = False
 torch.backends.cudnn.allow_tf32 = False

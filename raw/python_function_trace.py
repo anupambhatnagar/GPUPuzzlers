@@ -5,6 +5,11 @@ import numpy as np
 import torch
 from torch.autograd.profiler import profile
 
+'''
+Synthetic example created for Aaron Shi's note on PFT - shows
+how we need to enable it to see what's happening on host side.
+'''
+
 N = 1000
 
 # Mimics host-side I/O and preprocessing.

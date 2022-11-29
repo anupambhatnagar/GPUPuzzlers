@@ -5,6 +5,10 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
+'''
+Show the power of foreach for operator fusion.
+'''
+
 # Disable tensorcore so that it doesn't cause streams to block.
 torch.backends.cuda.matmul.allow_tf32 = False
 torch.backends.cudnn.allow_tf32 = False

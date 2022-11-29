@@ -5,11 +5,13 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
+'''
+Some experiments to see if we can show nondeterministic numerics - not able
+to find anything so far (but see Yu Guo's examples in nondeterministic_behavior.py).
+'''
+
 torch.use_deterministic_algorithms(False)
 
-# Disable tensorcore so that it doesn't cause streams to block.
-torch.backends.cuda.matmul.allow_tf32 = False
-torch.backends.cudnn.allow_tf32 = False
 
 N = 5000
 M = 16

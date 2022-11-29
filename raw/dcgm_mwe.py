@@ -25,6 +25,10 @@ import logging
 logger = logging.getLogger(LOGGER_NAME)
 import json
 
+'''
+Experiments with dcgm library for gpu stats, probably not relevant.
+'''
+
 class ModelAnalyzer:
     def __init__(self):
         self.gpu_factory = GPUDeviceFactory()
@@ -170,4 +174,5 @@ for i in range(100):
 ''', 
 number = 3
 )
+
 print(T)

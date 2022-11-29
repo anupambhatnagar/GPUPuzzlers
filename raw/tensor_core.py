@@ -5,6 +5,12 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
+''' 
+Shows the relative difference in performance across fp32, tf32 and fp16 gemms.
+TODO: show how to convert types, talk to complexity of that. 
+(Include something with int8 tensors with scale and offset?)
+'''
+
 N = 4096
 num_launches_base = 20
 

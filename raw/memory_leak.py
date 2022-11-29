@@ -1,10 +1,16 @@
 import time
 import gc
 
-import GPUtil
+# GPUtil is an OSS library that can be used to 
+# get nvidia-smi stats programmatically.
+#import GPUtil
 
 import torch
 from torch.autograd.profiler import profile
+
+'''
+Profile and show stats in the presence of leaks.
+'''
 
 N = 50000
 num_launches_base = 100
@@ -20,8 +26,10 @@ def do_work():
         x = torch.zeros(N,N)
         x.to(cuda)
         A.append(x)
-        GPUtil.showUtilization()
-        print(torch.cuda.memory_allocated(), torch.cuda.max_memory_allocated(), torch.cuda.max_memory_reserved() )
+        #GPUtil.showUtilization()
+        print(torch.cuda.memory_allocated(), 
+              torch.cuda.max_memory_allocated(), 
+              torch.cuda.max_memory_reserved() )
         pass
     torch.cuda.synchronize()
     end_time = time.time()

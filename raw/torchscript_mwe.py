@@ -1,5 +1,9 @@
 import torch
 
+'''
+torchscript MWE that I played around with, not relevant to GPU 201
+'''
+
 @torch.jit.script
 def foo(x, y):
     if x.max() > y.max():

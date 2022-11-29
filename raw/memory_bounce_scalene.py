@@ -5,9 +5,10 @@ from scalene import scalene_profiler
 import torch
 from torch.autograd.profiler import profile
 
-# # Disable tensorcore so that it doesn't cause streams to block.
-# torch.backends.cuda.matmul.allow_tf32 = False
-# torch.backends.cudnn.allow_tf32 = False
+'''
+Tried to use the scalene profiler which is supposed to be good
+for host side events, but didn't get meaningul results.
+'''
 
 N = 10000
 num_launches_base = 6
@@ -15,9 +16,6 @@ num_launches_base = 6
 cuda = torch.device('cuda')
 torch.cuda.set_sync_debug_mode(1)
 
-# Create streams that we'll use to execute in parallel. This is not a 
-# common use case: usually everything is executed in the default stream, 
-# which has id 7.)
 
 s,t,u = [torch.cuda.Stream() for _ in range(3)]
 

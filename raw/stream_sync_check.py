@@ -5,6 +5,10 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
+'''
+Illustrate how to races can occur across streams, also how to synchronize.
+'''
+
 # Disable tensorcore so that it doesn't cause streams to block.
 torch.backends.cuda.matmul.allow_tf32 = False
 torch.backends.cudnn.allow_tf32 = False
@@ -13,11 +17,7 @@ N = 40000
 num_launches_base = 1000
 
 cuda = torch.device('cuda')
-torch.cuda.set_sync_debug_mode(1)
-
-# Create streams that we'll use to execute in parallel. This is not a 
-# common use case: usually everything is executed in the default stream, 
-# which has id 7.)
+torch.cuda.set_sync_debug_mode(1) # Relatively new experimental feature to detect races.
 
 s,t,u = [torch.cuda.Stream() for _ in range(3)]
 

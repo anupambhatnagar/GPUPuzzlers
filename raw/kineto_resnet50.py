@@ -10,6 +10,10 @@ import torchvision.models as models
 
 from torch.autograd.profiler import profile
 
+''' 
+Using profiler on a basic resnet model.
+'''
+
 model = models.resnet50(pretrained=True)
 model.cuda()
 cudnn.benchmark = True
@@ -43,4 +47,4 @@ try:
     os.mkdir("result")
 except Exception:
     pass
-p.export_chrome_trace("/tmp/worker0.pt.trace.json")
+p.export_chrome_trace("resnet50.trace.json")

@@ -6,20 +6,11 @@ import gc
 import torch
 from torch.profiler import profile, record_function, ProfilerActivity
 
-#from torch.autograd.profiler import profile
+'''
+I don't recall exactly what this was for, maybe benchmarking the allocator?
+'''
 
-# The flag below controls whether to allow TF32 on matmul. This flag defaults to True.
-# We are turning off so as to check whether big gemms achieve peak flops by looking at 
-# duration of gemms in the trace.
-torch.backends.cuda.matmul.allow_tf32 = False
-
-# The flag below controls whether to allow TF32 on cuDNN. This flag defaults to True.
-torch.backends.cudnn.allow_tf32 = False
-
-# With a large N (e.g., 32K) gemms approach fp32 roofline of 19.5 TFLOPS.
 N = 1024
-M = 2000
-#M = 1
 
 T = []
 print("hello!")

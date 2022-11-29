@@ -5,15 +5,13 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
-# Disable tensorcore so that it doesn't cause streams to block.
+'''
+Perform some matrix math on CPU.
+'''
+
 
 N = 1000
-#num_launches_base = 400
 num_launches_base = 40
-
-# Create streams that we'll use to execute in parallel. This is not a 
-# common use case: usually everything is executed in the default stream, 
-# which has id 7.)
 
 # Use different size matrices to identify calls on CPU side in Kineto trace.
 A = torch.rand((N,N), device='cpu')

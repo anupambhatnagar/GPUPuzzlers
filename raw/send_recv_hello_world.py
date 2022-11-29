@@ -1,11 +1,26 @@
-# https://huggingface.co/docs/transformers/v4.13.0/en/performance
-
 import os
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
 from torch.autograd.profiler import profile
+
+'''
+Minimal example that shows how send and recv appear on a trace.
+
+TODOs:
+ - get effective BW between devices for each pair of devices (generalize to multihost?), 
+   tie into the server architecture (nvlink, nvswitch, PCIE, roce)
+ - figure out what's happening with the traces, appear very noisy
+
+Warning - be sure CUDA_VISIBLE_DEVICES is not masking GPUs, e.g., do
+% export CUDA_VISIBLE_DEVICES=0,1
+
+'''
+
+# Can use this to hard code the two devices we use for distributed.
+# deviceA = 6
+# deviceB = 7
 
 def run(rank, size):
     with profile(use_cuda=True, use_kineto=True, record_shapes=True) as p:
@@ -27,12 +42,14 @@ def init_process(rank, size, fn, backend='gloo'):
     dist.init_process_group(backend, rank=rank, world_size=size)
     fn(rank, size)
 
-
 if __name__ == "__main__":
     size = 2
+    R = range(2)
+    #R = [deviceA, deviceB]  # Use these two GPUs.
+    #size = len(R)
     processes = []
     mp.set_start_method("spawn")
-    for rank in range(size):
+    for rank in R:
         p = mp.Process(target=init_process, args=(rank, size, run, 'nccl'))
         p.start()
         processes.append(p)

@@ -3,6 +3,10 @@ import gc
 import time
 import sys
 
+'''
+Trying to get better understanding of gc benavior.
+'''
+
 gc.disable()
 
 N = 100*1000*1000

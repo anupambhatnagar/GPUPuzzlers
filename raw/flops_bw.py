@@ -5,13 +5,17 @@ import time
 import torch
 from torch.autograd.profiler import profile
 
+'''
+Run matrix multiplies and matrix adds in different streams, see if
+there's concurrency since former is flops limited and latter is mem BW limited.
+'''
+
 # Disable tensorcore so that it doesn't cause streams to block.
 torch.backends.cuda.matmul.allow_tf32 = False
 torch.backends.cudnn.allow_tf32 = False
 
 N = 10000
 M = 2000
-#num_launches_base = 400
 num_launches_base = 20
 
 cuda = torch.device('cuda')
@@ -37,10 +41,10 @@ def do_work(X, Y, Z):
             torch.matmul(B,B) 
         for i in range(num_launches_base):
             torch.add(A,A) 
-    #with torch.cuda.stream(t):
-    #   for i in range(num_launches_base):
-    #       torch.add(A,A) 
-    #C.cumsum(dim=0)
+    with torch.cuda.stream(t):
+       for i in range(num_launches_base):
+           torch.add(A,A) 
+    C.cumsum(dim=0)
     torch.cuda.synchronize()
     end_time = time.time()
     return end_time - start_time

@@ -1,6 +1,11 @@
 import torch
 import os
 from timeit import default_timer as timer
+
+'''
+MWE for static runtime, I think I pulled this from a note by Hao
+a long time ago.
+'''
  
 class DeepAndWide(torch.nn.Module):
     def __init__(self, num_features=50):
