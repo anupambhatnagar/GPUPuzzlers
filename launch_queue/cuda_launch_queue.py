@@ -25,45 +25,42 @@ A = torch.rand((N,N), device='cuda')
 B = torch.rand((M,M), device='cuda')
 C = torch.rand(M, device='cuda')
 
-s = torch.cuda.Stream()
-
 def do_work(X, Y, Z):
     start_time = time.time()
     for i in range(num_launches_base):
-        with torch.cuda.stream(s):
 
-            # Challenge 1: which block is faster?
+       # Challenge 1: which block is faster?
 
-            # Block 1
-            for j in range(10):
-                torch.matmul(B,B)
-            torch.matmul(A,A) 
-            torch.cuda.synchronize()
-            time.sleep(DELAY)
+       # Block 1
+       for j in range(10):
+           torch.matmul(B,B)
+       torch.matmul(A,A) 
+       torch.cuda.synchronize()
+       time.sleep(DELAY)
 
-            # Block 2: reverse order of big gemm and small gemms
-            torch.matmul(A,A) 
-            for j in range(10):
-                torch.matmul(B,B)
-            time.sleep(DELAY)
-            torch.cuda.synchronize()
+       # Block 2: reverse order of big gemm and small gemms
+       torch.matmul(A,A) 
+       for j in range(10):
+           torch.matmul(B,B)
+       time.sleep(DELAY)
+       torch.cuda.synchronize()
 
-            # Challenge 2: why is second set of small gemms slower?
-            torch.matmul(A,A) 
-            # Set 1
-            for j in range(10):
-                torch.matmul(B,B)
-            C.to('cpu')
-            # Avoid the stall by using non_blocking=True (but opens
-            # you up to potential races).
-            # More details here: https://pytorch.org/docs/stable/notes/cuda.html#use-pinned-memory-buffers
-            #C.to('cpu', non_blocking=True)
+       # Challenge 2: why is second set of small gemms slower?
+       torch.matmul(A,A) 
+       # Set 1
+       for j in range(10):
+           torch.matmul(B,B)
+       C.to('cpu')
+       # Avoid the stall by using non_blocking=True (but opens
+       # you up to potential races).
+       # More details here: https://pytorch.org/docs/stable/notes/cuda.html#use-pinned-memory-buffers
+       #C.to('cpu', non_blocking=True)
 
-            # Set 2
-            for j in range(10):
-                torch.matmul(B,B)
-            time.sleep(DELAY)
-            torch.cuda.synchronize()
+       # Set 2
+       for j in range(10):
+           torch.matmul(B,B)
+       time.sleep(DELAY)
+       torch.cuda.synchronize()
 
     C.cumsum(dim=0)
     torch.cuda.synchronize()

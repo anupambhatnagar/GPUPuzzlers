@@ -1,14 +1,14 @@
-# Understanding the CUDA Launch Queue
+## Understanding the CUDA Launch Queue
 
-This [program](cuda_launch_queue.py) does 10 small matrix multiplications, followed by a large matrix multiplication. After a pause, it does the large matrix multiplication, followed by the small matrix multiplications. The [timeline trace](TODO), shown below, indicates that it's faster to do the large matrix multiple first - why?
+This [program](cuda_launch_queue.py) does 10 small matrix multiplications, followed by a large matrix multiplication. After a pause, it does the large matrix multiplication, followed by the small matrix multiplications. The [timeline trace](N=1600-cuda-queue-puzzlers.trace.json), shown below, indicates that it's faster to do the large matrix multiple first - why?
 
 ![CUDA Launch Queue](cuda_launch_queue.jpg?raw=true "CUDA Launch Queue")
 
-## Hint
+### Hint
 
 Since CUDA kernel calls don't block on the host, the GPU must buffer calls.
 
-## Solution
+### Solution
 
 To keep the CPU from blocking when it dispatches compute kernels, the GPU maintains a queue of kernel calls - the CUDA launch queue - in the order in which they are made by the host. 
 
@@ -16,7 +16,7 @@ It takes time to launch a kernel - the CPU has to initiate a PCI-E transaction w
 
 In the second case, the GPU takes longer to perform the large matrix multiply, so the CUDA launch queue can fill up. After the large matrix multiply finishes, the GPU can immediately turn to the small matrix multiples.
 
-## Discussion
+### Discussion
 
 - If we had a very large number of small matrix multiplications after the large one, we would expect at some point the CUDA launch queue will empty out (since the service rate is higher than the arrival rate). This is exactly what happens if we have 40 or more small matrix multiplications.
 - Not letting the CUDA launch queue empty out is a guiding principle in designing high performance PyTorch programs. Some ways to achieven this:
