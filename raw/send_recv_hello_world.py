@@ -23,27 +23,31 @@ NVIDIA's code to do the same test:
 
 '''
 
+N = 1000
 N = 1000000000
-#N = 1000
 
 def run(rank, size, sender, receiver):
+    print(f"in run, rank = {rank}")
     with profile(use_cuda=True, use_kineto=True, record_shapes=True) as p:
-        if rank == sender:
-            tensor = torch.zeros(N, device="cuda:" + str(rank))
+        if rank == 0:
+            tensor = torch.zeros(N, device="cuda:" + str(sender))
             tensor += 42
         else:
-            tensor = torch.empty(N, device="cuda:" + str(rank))
+            tensor = torch.empty(N, device="cuda:" + str(receiver))
+        print(f"in run, tensors ready")
 
-        if rank == sender:
+        if rank == 0:
             torch.cuda.synchronize()
             start_time = time.time()
-            dist.send(tensor=tensor, dst=receiver)
+            print(f"sending from {rank}")
+            dist.send(tensor=tensor, dst=1)
             torch.cuda.synchronize()
             end_time = time.time()
         else:
             torch.cuda.synchronize()
             start_time = time.time()
-            dist.recv(tensor=tensor, src=sender)
+            print(f"receiving at {rank}")
+            dist.recv(tensor=tensor, src=0)
             torch.cuda.synchronize()
             end_time = time.time()
             print(f"Effective receive bandwidth {sender} -> {receiver} = {4 * N/(end_time - start_time)/1e9} GB/s")
@@ -56,23 +60,28 @@ def init_process(rank, size, fn, sender, receiver, backend='gloo'):
     """ Initialize the distributed environment. """
     os.environ['MASTER_ADDR'] = '127.0.0.1'
     os.environ['MASTER_PORT'] = '29500'
-    os.environ['MASTER_PORT'] = '29501'
+        
+    #os.environ['MASTER_PORT'] = '29501'
+    print(f"in init_process, rank = {rank}")
     dist.init_process_group(backend, rank=rank, world_size=size)
+    print(f"in init_process, rank = {rank} - initialized")
     fn(rank, size, sender, receiver)
 
 
 if __name__ == "__main__":
     size = 2
-    R = range(size)
     # Optionally pass in args for the cuda devices to test
     if len(sys.argv) > 1:
         print(sys.argv)
         R = [int(sys.argv[1]), int(sys.argv[2])]
         sender = R[0]
         receiver = R[1]
+        print(f"sender, receiver = {sender}, {receiver}")
     processes = []
     mp.set_start_method("spawn")
+    R = range(size)
     for rank in R:
+        print(f"launching rank {rank}")
         p = mp.Process(target=init_process, args=(rank, size, run, sender, receiver, 'nccl'))
         p.start()
         processes.append(p)

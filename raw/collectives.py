@@ -55,9 +55,11 @@ def average_gradients(model):
 
 def run(rank, size):
     torch.manual_seed(1234)
-    group = dist.new_group([0, 1])
-
+    #group = dist.new_group([0, 1, 2])
+    group = dist.new_group(range(size))
     params = torch.ones(N) * float(rank)
+
+    '''
     tensor = params.clone()
     dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
     print('Rank SUM ', rank, ' has data ', tensor)
@@ -72,14 +74,27 @@ def run(rank, size):
 
     tensor = params.clone()
     start_time = time.time()
-    print(f"starting broadcast from rank {rank}, tensor = {tensor}")
+    print(f"starting broadcast: src = 0, rank {rank}, tensor = {tensor}")
     dist.broadcast(tensor, src=0, group=group, async_op=True)
     torch.cuda.synchronize()
     end_time = time.time()
     print(f"rank {rank} has new tensor {tensor},  "
             f"time = {end_time - start_time}, " 
             f"BW = {4*N/(end_time - start_time)/1e9} GB/s")
+    '''
+    send = params.clone()
+    receive = send
+    print(f"starting custom allreduce: rank {rank}, send = {send}")
+    start_time = time.time()
+    allreduce(send, receive)
+    torch.cuda.synchronize()
+    end_time = time.time()
+    print(f"rank {rank} has new receive {receive},  "
+            f"time = {end_time - start_time}, " 
+            f"BW = {4*N/(end_time - start_time)/1e9} GB/s")
 
+
+    
 
 def init_process(rank, size, fn, backend='gloo'):
     """ Initialize the distributed environment. """
@@ -90,7 +105,7 @@ def init_process(rank, size, fn, backend='gloo'):
 
 
 if __name__ == "__main__":
-    size = 2
+    size = 8
     processes = []
     mp.set_start_method("spawn")
     for rank in range(size):

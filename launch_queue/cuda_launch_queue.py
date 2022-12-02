@@ -12,7 +12,7 @@ Shows how queuing order and RAW hazards impact performance.
 N = 1600
 M = 100
 num_launches_base = 1
-DELAY = 1e-2 # In seconds.
+DELAY = 1e-3 # In seconds.
 
 cuda = torch.device('cuda')
 

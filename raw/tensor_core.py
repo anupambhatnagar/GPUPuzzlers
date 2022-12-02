@@ -11,8 +11,10 @@ TODO: show how to convert types, talk to complexity of that.
 (Include something with int8 tensors with scale and offset?)
 '''
 
-N = 4096
-num_launches_base = 20
+#N = 4096
+N = 10000
+#num_launches_base = 200
+num_launches_base = 200
 
 cuda = torch.device('cuda')
 torch.cuda.set_sync_debug_mode(1)
@@ -30,9 +32,9 @@ def do_work():
     start_time = time.time()
     with torch.cuda.stream(s):
         for i in range(num_launches_base):
-            torch.backends.cuda.matmul.allow_tf32 = True
+            torch.backends.cuda.matmul.allow_tf32 = False
             #torch.matmul(A,A) 
-            #torch.matmul(B,B) 
+            torch.matmul(B,B) 
             #torch.matmul(C,C) 
             pass
     with torch.cuda.stream(t):
@@ -40,7 +42,8 @@ def do_work():
             torch.backends.cuda.matmul.allow_tf32 = True
             #torch.matmul(Ad,Ad) 
             #torch.matmul(Bd,Bd) 
-            torch.matmul(Cd,Cd) 
+            #torch.matmul(Cd,Cd) 
+            pass
     torch.cuda.synchronize()
     end_time = time.time()
     return end_time - start_time
