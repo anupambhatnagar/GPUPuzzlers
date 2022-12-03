@@ -2,7 +2,22 @@
 
 This [program](cuda_launch_queue.py) does 10 small matrix multiplications, followed by a large matrix multiplication. After a pause, it does the large matrix multiplication, followed by the small matrix multiplications. The [timeline trace](N=1600-cuda-queue-puzzlers.trace.json), shown below, indicates that it's faster to do the large matrix multiple first - why?
 
-![CUDA Launch Queue](cuda_launch_queue.jpg?raw=true "CUDA Launch Queue")
+ 
+```python
+# A is a large matrix, the B[i]s are small matrices.
+
+for j in range(10):
+    Br[j] = torch.matmul(B[j],B[j])
+Ar = torch.matmul(A,A)
+torch.cuda.synchronize()
+time.sleep(1e-3)
+
+Ar = torch.matmul(A,A)
+for j in range(10):
+    torch.matmul(B[j],B[j])
+```
+
+![CUDA Launch Queue Trace](cuda_launch_queue.jpg?raw=true "CUDA Launch Queue Trace")
 
 ### Hint
 
@@ -16,6 +31,10 @@ It takes time to launch a kernel - the CPU has to initiate a PCI-E transaction w
 
 In the second case, the GPU takes longer to perform the large matrix multiply, so the CUDA launch queue can fill up. After the large matrix multiply finishes, the GPU can immediately turn to the small matrix multiples.
 
+This graphic shows the launch queues.
+![CUDA Launch Queue Microarchitecture](cuda_launch_queue_uarch.jpg?raw=true "CUDA Launch Queue Microarchitecture")
+
+
 ### Discussion
 
 - If we had a very large number of small matrix multiplications after the large one, we would expect at some point the CUDA launch queue will empty out (since the service rate is higher than the arrival rate). This is exactly what happens if we have 40 or more small matrix multiplications.
@@ -25,4 +44,3 @@ In the second case, the GPU takes longer to perform the large matrix multiply, s
 - Technically, the GPU maintains multiple queues, one per stream, but we can ignore that in this single stream case.
 - Each queue entry is constrained to be very small: under 1 KB. It's basically the function pointer, and arguments, which are pointers to tensors. Notably, a host-side tensor cannot be an argument - tensors have to be explicitly copied to and from device.
 - If the CUDA launch queue reaches 1000 entries, the host will block on calling a compute kernel. This can be problematic if there's other work the host could be doing, and should be avoided.
-
