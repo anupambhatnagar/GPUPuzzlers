@@ -1,10 +1,16 @@
 ## Understanding the CUDA Launch Queue
 
-This [program](cuda_launch_queue.py) does 10 small matrix multiplications, followed by a large matrix multiplication. After a pause, it does the large matrix multiplication, followed by the small matrix multiplications. The [timeline trace](N=1600-cuda-queue-puzzlers.trace.json), shown below, indicates that it's faster to do the large matrix multiple first - why?
+### Context 
+
+When the CPU sends a kernel to the GPU, it doesn't bock on the GPU, i.e., control returns to the host thread before the GPU completes the requested task. This means many GPU operations can be queued up to be executed by the CUDA driver, as GPU resources become available, which leaves the CPU free for other tasks. (There are some exceptions to this asynchronicity, notably around CPU-GPU memory copies and synchronization primitives; we'll discuss these in another unit.)
+
+### Problem
+
+This [program](cuda_launch_queue.py) squares 10 100x100 matrices, followed by squaring a 1600x1600 matrix. After a pause, it does the large squaring, followed by the small squarings. The [timeline trace](N=1600-cuda-queue-puzzlers.trace.json), shown below, indicates that it's faster to do the large matrix squaring first - why?
 
  
 ```python
-# A is a large matrix, the B[i]s are small matrices.
+# A is a 1600x1600 matrix, the B[i]s are 10x10 matrices.
 
 for j in range(10):
     Br[j] = torch.matmul(B[j],B[j])
@@ -31,6 +37,8 @@ It takes time to launch a kernel - the CPU has to initiate a PCI-E transaction w
 
 In the second case, the GPU takes longer to perform the large matrix multiply, so the CUDA launch queue can fill up. After the large matrix multiply finishes, the GPU can immediately turn to the small matrix multiples.
 
+<!--- from https://slideplayer.com/slide/8211225/ -->
+<!--- see also http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf ->
 This graphic shows the launch queues.
 ![CUDA Launch Queue Microarchitecture](cuda_launch_queue_uarch.jpg?raw=true "CUDA Launch Queue Microarchitecture")
 
