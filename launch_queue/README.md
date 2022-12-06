@@ -1,3 +1,5 @@
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
 ## The CUDA Launch Queue
 
 ### Context 
@@ -16,6 +18,7 @@ This [program](cuda_launch_queue.py) squares 10 100x100 matrices, followed by sq
 for j in range(10):
     Br[j] = torch.matmul(B[j],B[j])
 Ar = torch.matmul(A,A)
+torch.cuda.synchronize()
 time.sleep(1e-3)
 
 Ar = torch.matmul(A,A)
@@ -34,7 +37,7 @@ Since CUDA kernel calls don't block on the host, GPU operations must be queued u
 
 To keep the CPU from blocking when it dispatches compute kernels, the GPU maintains a queue of kernel calls - the CUDA launch queue - in the order in which they are made by the host. 
 
-It takes time to launch a kernel - the CPU has to initiate a PCI-E transaction with the GPU - and this time can dominate the time taken to perform the actual computation on the GPU. In the first case, the GPU completes each small matrix multiply before the next one is ready, so it idles between the small multiplies. 
+It takes time to launch a kernel - in addition to PyTorch dispatch overhead, the CPU has to initiate a PCI-E transaction with the GPU - and this time can dominate the time taken to perform the actual computation on the GPU. In the first case, the GPU completes each small matrix multiply before the next one is ready, so it idles between the small multiplies. 
 
 In the second case, the GPU takes longer to perform the large matrix multiply, so the CUDA launch queue can fill up. After the large matrix multiply finishes, the GPU can immediately turn to the small matrix multiplies.
 
