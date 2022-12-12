@@ -10,6 +10,9 @@ Marketing literature for GPUs stresses their high FLOPs. An A100 is advertised a
 ### Problem
 
 This [program](flops_bw.py) does performs a number of numerical operations on tensors: addition, scalar multiplication, transcendental functions, and matrix multiplications. The [timeline trace](N=flops.trace.json), shown below, indicates that other than matrix multiplication, all of the other operations are a tiny fraction (~1%) of the advertised flops. Furthermore, simple operations like addition take exactly as long as complex ones like sine and log. Why?
+<table>
+<tr>
+<td>
 ```python
     def sync_and_pause():
         torch.cuda.synchronize()
@@ -29,7 +32,10 @@ This [program](flops_bw.py) does performs a number of numerical operations on te
     
     C = B + A
     sync_and_pause()
-    
+```
+</td>
+<td>
+```python
     B = torch.sin(A)
     sync_and_pause()
     
@@ -48,6 +54,9 @@ This [program](flops_bw.py) does performs a number of numerical operations on te
     B = torch.matmul(A, A)
     sync_and_pause()
 ```
+</td>
+</tr>
+</table>
 
 #### Kineto Trace
 ![Assorted Flops](assorted_flops.jpg?raw=true "Assorted Flops")

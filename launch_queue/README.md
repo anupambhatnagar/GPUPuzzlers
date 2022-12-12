@@ -4,7 +4,7 @@
 
 ### Context 
 
-When the CPU sends a kernel to the GPU, it doesn't bock on the GPU, i.e., control returns to the host thread before the GPU completes the requested task. This leaves the CPU free for other tasks.
+A kernel is a function that's executed on the GPU. When the CPU sends a kernel to the GPU, it doesn't block on the GPU, i.e., control returns to the CPU thread before the GPU completes the requested task. This leaves the CPU free for other tasks.
 
 
 ### Problem
@@ -37,7 +37,7 @@ Since CUDA kernel calls don't block on the host, GPU operations must be queued u
 
 To keep the CPU from blocking when it dispatches compute kernels, the GPU maintains a queue of kernel calls - the CUDA launch queue - in the order in which they are made by the host. 
 
-It takes time to launch a kernel - in addition to PyTorch dispatch overhead, the CPU has to initiate a PCI-E transaction with the GPU - and this time can dominate the time taken to perform the actual computation on the GPU. In the first case, the GPU completes each small matrix multiply before the next one is ready, so it idles between the small multiplies. 
+It takes time to launch a kernel - the PyTorch dispatch overhead - and this time can dominate the time taken to perform the actual computation on the GPU. In the first case, the GPU completes each small matrix multiply before the next one is ready, so it idles between the small multiplies. 
 
 In the second case, the GPU takes longer to perform the large matrix multiply, so the CUDA launch queue can fill up. After the large matrix multiply finishes, the GPU can immediately turn to the small matrix multiplies.
 
@@ -49,13 +49,19 @@ In the second case, the GPU takes longer to perform the large matrix multiply, s
   - Operator fusion, wherein we do more work in a single kernel.
   - Avoiding operations that force the queue to be flushed - a common example is a GPU to CPU copy, which leads to a read-after-write data hazard. (Flushing the queue is analogous to stalling the pipeline in a pipelined processor.)
   - Reordering independent operations to bring the slower operations to the front of the queue (this example).
-- There are some exceptions to asynchronous kernel launches, notably around CPU-GPU memory copies and synchronization primitives; we'll discuss these in another unit. 
-- Asynchronous launches can be disabled by setting `CUDA_LAUNCH_BLOCKING=1`. This is useful for debugging, especially in the context of multiple streams - [see the CUDA Toolkit Documentation for details](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device).
-- In this unit, we're working with a single [stream](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#streams). In general the GPU maintains multiple queues, one per stream.
-- Each queue entry is constrained to be very small: under 1 KB. It's basically the function pointer, and arguments, which are pointers to tensors. Notably, a host-side tensor cannot be an argument - tensors have to be explicitly copied to and from device.
-- If the CUDA launch queue reaches 1000 entries, the host will block on calling a compute kernel. This can be problematic if there's other work the host could be doing, and should be avoided.
 - This graphic shows the launch queues.
 ![CUDA Launch Queue Microarchitecture](cuda_launch_queue_uarch.jpg?raw=true "CUDA Launch Queue Microarchitecture")
+  - Each queue entry is constrained to be very small: under 1 KB. It's basically the function pointer, and arguments, which are pointers to tensors. Notably, a host-side tensor cannot be an argument - tensors have to be explicitly copied to and from device.
+  - If the CUDA launch queue reaches a threshold (around 1000 entries), the host will block on calling a compute kernel. This can be problematic if there's other work the host could be doing, and should be avoided.
+- There are some exceptions to asynchronous kernel launches, notably around CPU-GPU memory copies and synchronization primitives; we'll discuss these in another unit. 
+  - Asynchronous launches can be disabled by setting `CUDA_LAUNCH_BLOCKING=1`. This is useful for debugging, especially in the context of multiple streams - [see the CUDA Toolkit Documentation for details](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device).
+- In this unit, we're working with a single [stream](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#streams). In general the GPU maintains multiple queues, one per stream.
 <!--- from https://slideplayer.com/slide/8211225/ -->
 <!--- see also http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
-
+<!--
+- TODO: from Yueming, add NSIGHT traces, understand what is happening there (sending multiple kernels in one shot?)
+- TODO: cudnn optimization enable, see if that leads to pytorch matching CUDA code
+- TODO: summarize jason/kimish insights into launch overhead
+- TODO: see if we can trace PCIE to see how much that contributes and if CUDA graph/CUDA code do group transactions
+- TODO: explain need for Kineto and CUPTI - profiler is not enough
+-->
