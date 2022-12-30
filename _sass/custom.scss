@@ -1,0 +1,33 @@
+.prev-next {
+  display: block;
+  overflow: hidden;
+  @include relative-font-size(0.9);
+}
+.prev-next .half {
+  display: block;
+  width: 50%;
+  float: left;
+  margin: 1em 0;
+}
+.prev-next .next {
+  text-align: right;
+}
+.post-tag {
+  display: inline-block;
+  background: $grey-color-light;
+  padding: 0 .5rem;
+  margin-right: .5rem;
+  border-radius: 4px;
+  color: $text-color;
+  font-size: 90%;
+  &:before {
+    content: "\f02b";
+    font-family: FontAwesome;
+    padding-right: .5em;
+  }
+  &:hover {
+    text-decoration: none;
+    background: $grey-color;
+    color: $background-color;
+  }
+}
