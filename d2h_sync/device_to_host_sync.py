@@ -3,21 +3,21 @@ import torch
 from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity
 
 
-def first_sum():
+def first_sum(tensor):
     total = 0.0
     for i in range(tensor.size()[0]):
         total += tensor[i].cpu()
     return total
 
 
-def second_sum():
+def second_sum(tensor):
     total = torch.zeros(1, device='cuda')
     for i in range(tensor.size()[0]):
         total += tensor[i]
     return total
 
 
-def third_sum():
+def third_sum(tensor):
     total = 0.0
     tensor_on_cpu = tensor.cpu()
     for i in range(tensor_on_cpu.size()[0]):
@@ -38,12 +38,12 @@ with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
              record_shapes=True,
              with_stack = True) as prof:
 
-    sum1 = first_sum()
+    sum1 = first_sum(tensor)
     sync_and_sleep()
 
-    sum2 = second_sum()
+    sum2 = second_sum(tensor)
     sync_and_sleep()
 
-    sum3 = third_sum()
+    sum3 = third_sum(tensor)
 
 assert sum1 == sum2.item() == sum3

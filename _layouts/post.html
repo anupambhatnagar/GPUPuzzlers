@@ -42,8 +42,13 @@ layout: default
    {%- endif -%}
   </p>
 
-  {% include prev_next.html prev_url=page.previous.url prev_text=page.previous.title next_url=page.next.url next_text=page.next.title %}
-  
+    {% include prev_next.html
+        prev_url=page.previous.url
+        prev_text=page.previous.title
+        next_url=page.next.url
+        next_text=page.next.title
+    %}
+
   {%- if site.disqus.shortname -%}
     {%- include disqus_comments.html -%}
   {%- endif -%}
