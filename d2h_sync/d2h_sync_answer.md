@@ -1,7 +1,7 @@
 ---
 layout: page
-title: The fastest way to add? 
-permalink: /d2h_sync_answer/
+title: Answer 
+permalink: /fastest-way-to-add-answer/
 ---
 
 The `first_sum` implementation is the slowest and the `third_sum` implementation is the
