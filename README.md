@@ -1,8 +1,8 @@
 # GPUPuzzlers
 
 ## Repo Layout
-
-├── raw                   // coalmine with diamonds (orignal code snippets by Adnan)
+```
+├── raw                   // a coal mine with diamonds (orignal code snippets by Adnan)
 ├──
 ├── Gemfile               // jekyll packages
 ├── Gemfile.lock          // jekyll packages with pinned dependencies (auto generated)
@@ -23,7 +23,7 @@
 ├── d2h_sync              // content for device to host sync lesson
 ├── launch_queue          // content on cuda launch queue lesson
 └── vector_flops          // content on tflops lesson
-
+```
 
 ## Lessons
 
@@ -49,7 +49,7 @@ should state the topics which will be discussed.
 
 1. Install ruby `brew install ruby`
 1. Install all dependencies (gems) `bundle install`
-1. To generate webpages locally execute `jekyll serve --future` from the root of the repo. Goto
-   localhost:4000 to view the website.
+1. To generate webpages locally execute `jekyll serve --future` from the root of the repo. Go to
+   `localhost:4000` to view the website.
 
 Note: The `--future` argument is passed to render future dated posts
