@@ -21,7 +21,7 @@ clarification). This is because once we read in a value, we operate on it multip
 amortizing the cost of the read.
 
 
-## Discussion
+### Discussion
 
 - The ratio of flops performed by an operation to the bytes read/written is known as the compute
   intensity of the operation. 
@@ -32,21 +32,10 @@ amortizing the cost of the read.
   when copies are aligned with cache dimensions. It assumes wide transfers, i.e., copying long
   contiguous segments of memory - this is true when dealing with tensors, but not for applications
   like sorting.
-- Within Meta, the top kernel types are vectorized functors (as we saw above), followed by embedding
-  bag lookups, followed by matrix multiplication. ![CUDA Launch Queue
-  Microarchitecture](cuda_launch_queue_uarch.jpg?raw=true "CUDA Launch Queue Microarchitecture")
-  <!--- from https://slideplayer.com/slide/8211225/ --> <!--- see also
-  http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
 
-## Key Takeaways
+### Key Takeaways
 
 
 
-## Futher Reading ??
-
---- 
-## Hint (this should be removed)
-
-[Amdahl's Law](https://en.wikipedia.org/wiki/Amdahl%27s_law): "the overall performance improvement gained by optimizing a single part of a system is limited by the fraction of time that the improved part is actually used".
-
+### Futher Reading 
 

@@ -1,14 +1,16 @@
 ---
 layout: page
 title: Answer
-permalink: /order-of-operations-answer/
+permalink: /order-of-kernels-answer/
 ---
 
 The image shown below indicates that it is faster to do the large matrix squaring first. Precisely
 speaking, the trace shows that `large_matmul_first` function takes 449 microseconds and the
 `small_matmul_first` function takes 858 microseconds.
 
-![Annotated trace](/launch_queue/kernel_launch_annotated_trace.png)
+<a href="/launch_queue/kernel_launch_annotated_trace.png">
+  <img src="/launch_queue/kernel_launch_annotated_trace.png" alt="Annotated Trace">
+</a>
 
 To explain this behavior we begin by introducting a couple of terms:
 

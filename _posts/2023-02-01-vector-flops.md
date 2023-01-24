@@ -14,16 +14,18 @@ import time
 import torch
 
 def sync_and_pause():
-torch.cuda.synchronize()
+  torch.cuda.synchronize()
   time.sleep(1e-6)
 
-size = 2^15
+size = 2**10
 ones = torch.ones((size, size), device=torch.device('cuda'))
 
+// in-place multiplication
 ones.mul_(0.5)
 sync_and_pause()
 
-result = ones.mul(0.5)
+// multiplication
+result = torch.mul(ones, 0.5)
 sync_and_pause()
 
 result += ones
@@ -38,13 +40,13 @@ sync_and_pause()
 result = torch.sigmoid(ones)
 sync_and_pause()
 
-torch.sqrt(ones, out=result)
+result = torch.sqrt(ones)
 sync_and_pause()
 
-torch.log10(ones, out=result)
+result = torch.log10(ones)
 sync_and_pause()
 
-torch.pow(ones, 3.14159, out=result)
+result = torch.pow(ones, 3.14159)
 sync_and_pause()
 
 result = torch.matmul(ones, ones)
@@ -55,6 +57,9 @@ The trace shown below indicates that other than matrix multiplication, all of th
 are a tiny fraction (~1%) of the advertised flops. Furthermore, simple operations like addition take
 exactly as long as complex ones like sine and log. Why?
 
-![trace](/vector_flops/assorted_flops.jpg?raw=true)
+<a href = "/vector_flops/assorted_flops.jpg">
+  <img src= "/vector_flops/assorted_flops.jpg" text="vector flops trace">
+</a>
 
+<br>
 [See answer and discussion](/vector-flops-answer/)

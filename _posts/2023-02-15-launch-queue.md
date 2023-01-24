@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Order of Operations
-permalink: /order-of-operations/
+title: Order of Kernels 
+permalink: /order-of-kernels/
 excerpt: The order of operations matters on the GPU. Can you find the faster ordering? 
 ---
 
@@ -25,4 +25,4 @@ def large_small():
        torch.matmul(small_matrix, small_matrix)
 ```
 
-[See answer and discussion](/order-of-operations-answer)
+[See answer and discussion](/order-of-kernels-answer)

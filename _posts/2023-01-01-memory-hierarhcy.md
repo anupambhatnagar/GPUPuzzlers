@@ -33,4 +33,6 @@ __Host code can__
 | Shared memory            | Read/Write  | Up to 164 KB per SM       |
 | Register memory          | Read/Write  | 256 KB per SM             |
 
-* Shared memory is configurable up to 164KB per SM.
+* [Shared
+  memory](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-8-x) is
+  configurable up to 164KB per SM.

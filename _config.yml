@@ -22,7 +22,7 @@ paginate: 8
 paginate_path: "/page:num/"
 
 header_pages:
-  - glossary.md
-  - about.md
+  - pages/glossary.md
+  - pages/about.md
 
 markdown: kramdown
