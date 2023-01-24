@@ -1,7 +1,7 @@
 ---
 layout: page
-title: The fastest way to add? 
-permalink: /d2h_sync_answer/
+title: Answer 
+permalink: /faster-way-to-add-answer/
 ---
 
 The `first_sum` implementation is the slowest and the `third_sum` implementation is the
@@ -93,7 +93,7 @@ there are thousands of GPU events with duration shorter than the corresponding C
 highlighting the issues with the `first_sum` and `second_sum` implementations.
 
 
-## Key Takeaways
+### Key Takeaways
 
 When possible,
 
@@ -102,7 +102,7 @@ When possible,
 1. Avoid low arithmetic intensity operations on the GPU. The GPU should be used for large matrix
    multiplications which have high arithmetic intensity.
 
-## Food for thought
+### Food for thought
 
 Highlight other ways in which device to host synchronization may be a bottleneck.
 

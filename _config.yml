@@ -1,13 +1,6 @@
 title: GPU Puzzlers
 author: Adnan Aziz and Anupam Bhatnagar
-description: On GPUs, PyTorch and CUDA.
-
-  #github_username: anupambhatnagar
-  #linkedin_username: bhatnagaranupam
-
-  #social_media:
-  #- { name: GitHub, fa_icon: fa-github-square, link: "https://github.com/anupambhatnagar" }
-  #- { name: LinkedIn, fa_icon: fa-linkedin-square, link: "https://linkedin.com/in/bhatnagaranupam" }
+description: 
 
 # Build settings
 theme: minima
@@ -29,7 +22,7 @@ paginate: 8
 paginate_path: "/page:num/"
 
 header_pages:
-  - about.md
-    #- quotes.md
+  - pages/glossary.md
+  - pages/about.md
 
 markdown: kramdown
