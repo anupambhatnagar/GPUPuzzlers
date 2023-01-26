@@ -105,6 +105,11 @@ kernel launch queue non-empty. Some ways to achieve this are:
 <!--- from https://slideplayer.com/slide/8211225/ -->
 <!--- see also http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
 <!--
+
+- NVIDIA offers a timeline viewer called NSIGHT that's analogous to Kineto, though less tightly coupled to PyTorch. Here's an NSIGHT trace that provides ground truth for the program we studied - it shows Kineto has high fidelity.
+![NSIGHT Trace for Kernel Launch](nsight-launch-queue.jpg?raw=true "NSIGHT Trace for Kernel Launch")
+
+
 - TODO: from Yueming, add NSIGHT traces, understand what is happening there (sending multiple kernels in one shot?)
 - TODO: cudnn optimization enable, see if that leads to pytorch matching CUDA code
 - TODO: summarize jason/kimish insights into launch overhead
