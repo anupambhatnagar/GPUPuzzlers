@@ -1,13 +1,15 @@
 ---
-title: GPU Memory Hierarchy
-layout: post
+title: GPU Memory
+layout: page
 permalink: /memory-hierarchy/
 excerpt: An overview of GPU memory hierarchy
 ---
 
-## Memory diagram 
+## Memory hierarchy diagram
 
-![GPU Memory Diagram](/images/cuda_memory_model.gif)
+<a href = "/images/memory_hierarchy.png">
+  <img src= "/images/memory_hierarchy.png" text="vector flops trace">
+</a>
 
 __Device code can__
 - R/W per-thread registers
@@ -34,7 +36,7 @@ __Host code can__
 
 \* Local memory is not a physical type of memory, but an abstraction of global memory. It is used
 only to hold automatic variables. The compiler makes use of local memory when it determines that
-there is not enough register space to hold the variable. 
+there is not enough register space to hold the variable.
 
 \*\* [Shared
   memory](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#shared-memory-8-x) is

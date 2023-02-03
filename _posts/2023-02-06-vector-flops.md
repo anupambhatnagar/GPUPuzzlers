@@ -24,7 +24,6 @@ ones = torch.ones((size, size), device=torch.device('cuda'))
 ones.mul_(0.5)
 sync_and_pause()
 
-// multiplication
 result = torch.mul(ones, 0.5)
 sync_and_pause()
 
