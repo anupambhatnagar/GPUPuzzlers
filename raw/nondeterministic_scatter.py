@@ -2,11 +2,8 @@ import torch
 import random
 
 '''
-Raw examples of nondeterminism in GPU compute, from Yu Guo.
+Raw examples of nondeterminism in GPU compute.
 '''
-
-# from yu guo: on deterministic operators, you can try https://fburl.com/code/bhciu9nh without DeterministicGuard(True)
-# index_add as well: https://fburl.com/code/4slorwuj
 
 class DeterministicGuard:
     def __init__(self, deterministic, *, warn_only=False):
@@ -92,7 +89,3 @@ for dim in range(3):
             if diff[i] != 0.0:
                 print(i, res[i], expected[i], diff[i])
 
-'''
-Yu: both these two operators have cuda atomic_add. if you try index_copy_, you should see another kind of race
-index_copy: https://fburl.com/code/2wa2ig57
-'''

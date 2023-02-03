@@ -3,8 +3,7 @@ import os
 from timeit import default_timer as timer
 
 '''
-MWE for static runtime, I think I pulled this from a note by Hao
-a long time ago.
+MWE for static runtime
 '''
  
 class DeepAndWide(torch.nn.Module):

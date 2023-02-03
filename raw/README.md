@@ -30,21 +30,21 @@ example to show the value of utilizing the GPU well using different streams.
 
 `kineto_resnet50.py` - profiling the resnet model
 
-`memory_bounce_scalene.py` - exploring the scalene profiler (%%)
+`memory_bounce_scalene.py` - exploring the scalene profiler
 
 `memory_leak.py` - profile memory in the presence and absence of leaks
 
-`nondeterministic_compute.py` - find non determinism in numerics; no example found yet (%%%)
+`nondeterministic_compute.py` - find non determinism in numerics; no example found yet
 
-`nondeterministic_scatter.py` - ??
+`nondeterministic_scatter.py` - ?? (%)
 
 `pinned_memory.py` - measure perf when copying from pinned vs. non-pinned memory
 
-`python_function_trace.py` - the last code block shows how to enable python tracing (%%)
+`python_function_trace.py` - the last code block shows how to enable python tracing
 
 `run_send_recv_hello_world.sh` - bash utility script for send_recv_hello_world.py
 
-`send_recv_hello_world.py` - mwe showing how send and receive show up on a trace (%%)
+`send_recv_hello_world.py` - mwe showing how send and receive show up on a trace
 
 `static_runtime_mwe.py` - ?? (%%)
 
