@@ -27,9 +27,10 @@ __Host__: alias for CPU.
 
 __Kernel__: a function executed on the GPU. Its arguments are primitive types and pointers, and cannot be larger than 1 KB.
 
-__NVLink__: an interconnection technology used to connect GPUs within a server. Note that GPUs within a server can also communicate via PCIE they are connected to.
+__NVLink__: an interconnection technology used to connect GPUs within a server.
+<!--Note that GPUs within a server can also communicate via PCIE they are connected to. -->
 
-__NVSwitch__: a switch used to connect GPUs within a single server - the connection between the switch and device is NVLink.
+__NVSwitch__: a switch used to connect GPUs within a single server. The connection between the switch and device is NVLink.
 
 __PTX Instruction__: an instruction specified by a CUDA thread.
 
@@ -81,7 +82,7 @@ __Microarchitecture__: hardware techniques used to implement an architecture eff
 
 __Memory Controller__: the hardware that reads and writes from DRAM performs DRAM maintainence events (for example, memory refresh)
 
-__Load/Store Architecture__: an architecture where instructions either load/store from registers to RAM or perform operations registers. This is the most prevalent computer architecture today.
+__Load/Store Architecture__: an architecture where instructions either load/store from registers to RAM or perform operations in registers. This is the most prevalent computer architecture today.
 
 __Instruction Level Parallelism (ILP)__: a microarchitectural innovation by which multiple instructions are executed in parallel.
 
@@ -105,7 +106,7 @@ increases as the number of processors is increased.
 
 ## Miscellaneous
 
-__Kineto__: the library that traces GPU kernel calls in PyTorch programs - GPU kernels are executed asynchronously on the GPU, so special NVIDIA libraries are needed to do the tracing.
+__Kineto__: the library that traces GPU kernel calls in PyTorch programs - GPU kernels are executed asynchronously on the GPU so special NVIDIA libraries are needed to do the tracing.
 
 __PyTorch Profiler__: the library that uses Kineto to generated host and device-side timeline traces for PyTorch programs.
 
