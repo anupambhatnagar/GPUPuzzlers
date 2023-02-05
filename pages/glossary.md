@@ -52,8 +52,8 @@ __Local memory__: private thread local memory for a CUDA thread. Implemented as 
 
 __Registers__: private registers for a CUDA thread.
 
-__Shared memory__: fast SRAM memory shared by CUDA threads composing a thread block and private to
-that thread block.
+__Shared memory__: on-chip memory shared by CUDA threads. Since shared memory is on chip it has higher
+bandwidth and lower latency compared to local/global memory.
 
 ## Computer Architecture
 
