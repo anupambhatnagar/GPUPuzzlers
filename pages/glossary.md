@@ -9,7 +9,7 @@ __Block__: a 1D/2D/3D collection of threads.
 
 __CUDA__: Compute Unified Device Architecture.
 
-__CUDA Core__: a single floating-point unit.
+__CUDA Core__: a single-precision (fp32) floating-point unit.
 
 __CUDA Stream__: a sequence of operations that execute in issue-order on the GPU.
 
@@ -49,11 +49,18 @@ __Global memory__: also known as DRAM. It is accessible by all CUDA threads in a
 grid.
 
 __Local memory__: private thread local memory for a CUDA thread. Implemented as a cached region of DRAM.
+<!-- TODO: slightly oxymoronic since we say DRAM is global, but local memory is part of DRAM. also saying 
+local memory - private thread local memory seems self referential. Some online reference to how
+"thread-local global memory" is a better term:
+A region of DRAM that's accessible only to a specific thread - "thread-local" global memory would be a more accurate term.
+-->
 
 __Registers__: private registers for a CUDA thread.
+<!-- TODO: they are local to the thread, but are they private? they are visible to the programmer... -->
 
-__Shared memory__: on-chip memory shared by CUDA threads. Since shared memory is on chip it has higher
+__Shared memory__: on-chip memory shared by CUDA threads. Since shared memory is on chip, and is built using SRAM, it has higher
 bandwidth and lower latency compared to local/global memory.
+<!-- basically there's two reasons, proximity and circuit technology: https://stackoverflow.com/questions/28804760/why-shared-memory-is-faster-than-global-memory -->
 
 ## Computer Architecture
 
