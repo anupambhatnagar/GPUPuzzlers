@@ -61,6 +61,10 @@ __Registers__: private registers for a CUDA thread.
 __Shared memory__: on-chip memory shared by CUDA threads. Since shared memory is on chip, and is built using SRAM, it has higher
 bandwidth and lower latency compared to local/global memory.
 <!-- basically there's two reasons, proximity and circuit technology: https://stackoverflow.com/questions/28804760/why-shared-memory-is-faster-than-global-memory -->
+<!--
+Used for communication among CUDA threads in a thread block at barrier synchronization points. Since
+shared memory is on chip it has higher bandwidth and lower latency compared to local/global memory.
+-->
 
 ## Computer Architecture
 
