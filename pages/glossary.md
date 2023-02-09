@@ -45,11 +45,12 @@ __Warp__: a collection of parallel CUDA threads in a thread block.
 
 ### GPU Memory
 
-__Global memory__: also known as DRAM. It is accessible by all CUDA threads in any block in any
-grid.
+__Global memory__: also known as DRAM. It is accessible by all CUDA threads in any block in any grid.
 
-__Local memory__: private thread local memory for a CUDA thread. Implemented as a cached region of DRAM.
-<!-- TODO: slightly oxymoronic since we say DRAM is global, but local memory is part of DRAM. also saying 
+__Local memory__: a region of DRAM that is accessible only to a specific CUDA thread.
+<!--
+"thread-local" memory for a CUDA thread. Implemented as a cached region of DRAM.
+TODO: slightly oxymoronic since we say DRAM is global, but local memory is part of DRAM. also saying
 local memory - private thread local memory seems self referential. Some online reference to how
 "thread-local global memory" is a better term:
 A region of DRAM that's accessible only to a specific thread - "thread-local" global memory would be a more accurate term.
