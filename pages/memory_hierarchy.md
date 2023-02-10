@@ -5,7 +5,7 @@ permalink: /memory-hierarchy/
 excerpt: An overview of GPU memory hierarchy
 ---
 
-## Memory hierarchy diagram
+## Logical memory hierarchy diagram
 
 <a href = "/images/memory_hierarchy.png">
   <img src= "/images/memory_hierarchy.png" text="vector flops trace">

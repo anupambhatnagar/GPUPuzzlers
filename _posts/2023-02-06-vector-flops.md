@@ -10,46 +10,52 @@ The code below performs a number of numerical operations on tensors: addition, s
 multiplication, transcendental functions, and matrix multiplications etc.
 
 ``` python
-import time
 import torch
+from torch.profiler import profile, ProfilerActivity
 
-def sync_and_pause():
-  torch.cuda.synchronize()
-  time.sleep(1e-6)
+def do_work():
+    SIZE = 2**12
+    ones = torch.ones((SIZE, SIZE), device=torch.device('cuda'))
 
-size = 2**10
-ones = torch.ones((size, size), device=torch.device('cuda'))
+    torch.matmul(ones, ones, out=ones)
 
-// in-place multiplication
-ones.mul_(0.5)
-sync_and_pause()
+    # In place multiplication
+    ones.mul_(0.5)
 
-result = torch.mul(ones, 0.5)
-sync_and_pause()
+    result = ones.mul(0.5)
 
-result += ones
-sync_and_pause()
+    total = ones + result
 
-total = ones + result
-sync_and_pause()
+    result = torch.sum(ones)
 
-result = torch.sin(ones)
-sync_and_pause()
+    # sqrt takes 7 ops.
+    result = torch.sqrt(ones)
 
-result = torch.sigmoid(ones)
-sync_and_pause()
+    # sin takes 17 ops (14 fp64, 3 fp32).
+    result = torch.sin(ones)
 
-result = torch.sqrt(ones)
-sync_and_pause()
+    # sigmoid takes 24 ops.
+    result = torch.sigmoid(ones)
 
-result = torch.log10(ones)
-sync_and_pause()
+    # log10 takes 24 ops.
+    result = torch.log10(ones)
 
-result = torch.pow(ones, 3.14159)
-sync_and_pause()
+    # pow takes 142 ops.
+    result = torch.pow(ones, 3.14159)
 
-result = torch.matmul(ones, ones)
-sync_and_pause()
+do_work()
+
+with profile(
+    activities = [ProfilerActivity.CPU, ProfilerActivity.CUDA],
+    profile_memory = True,
+    record_shapes = True
+    #with_stack = True
+) as prof:
+
+    do_work()
+
+filename = f"./flops.json"
+prof.export_chrome_trace(filename)
 ```
 
 The trace shown below indicates that other than matrix multiplication, all of the other operations
@@ -60,5 +66,4 @@ exactly as long as complex ones like sine and log. Why?
   <img src= "/vector_flops/assorted_flops.jpg" text="vector flops trace">
 </a>
 
-<br>
 [See answer and discussion](/vector-flops-answer/)
