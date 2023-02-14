@@ -13,5 +13,5 @@ the best selling comprehensive guide for software development roles.
 __Anupam Bhatnagar__ is a Software Engineer at Meta AI (FAIR) where he is the lead developer of
 [Holistic Trace Analysis](https://github.com/facebookresearch/HolisticTraceAnalysis), an open source
 performance debugging library for PyTorch users. Before joining Meta, Anupam worked as a Software
-Engineer at Unity Technologies. Prior to joining the industry he was a tenure track Assistant
+Engineer at Unity Technologies. Prior to joining the industry, he was a tenure track Assistant
 Professor of Mathematics at the City University of New York.
