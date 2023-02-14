@@ -7,7 +7,7 @@ from torch.autograd.profiler import profile
 
 '''
 Some experiments to see if we can show nondeterministic numerics - not able
-to find anything so far (but see Yu Guo's examples in nondeterministic_behavior.py).
+to find anything so far.
 '''
 
 torch.use_deterministic_algorithms(False)

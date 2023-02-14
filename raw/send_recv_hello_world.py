@@ -17,10 +17,7 @@ Be sure CUDA_VISIBLE_DEVICES is not masking GPUs, e.g., do
 Can use this in a shell script to get pairwise bandwidths. Here's 
 NVIDIA's code to do the same test:
   - Install from github: https://github.com/NVIDIA/cuda-samples
-  - Checkout tag 11.4 for devgpu (test cuda version with nvcc --version)
   - Make and execute p2pBandwidthLatencyTest
-  - Example output: P563418103
-
 '''
 
 N = 1000
