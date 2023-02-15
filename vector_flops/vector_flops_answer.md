@@ -49,7 +49,7 @@ Matrix multiplication achieves 19.5 TFLOPS/sec.
   **arithmetic intensity** of the operation.
   - For the point-wise operations, the flop count is $O(n)$, where $n$ is the number of tensor
     entries; the bytes read/written is also $O(n)$ so the arithmetic intensity is $O(1)$.
-  - For matrix multiplication of two $n \times n $ matrices, the flop count is $O($n^3)$, and the
+  - For matrix multiplication of two $n \times n $ matrices, the flop count is $O(n^3)$, and the
     number of bytes read/written are $O(n^2)$ so the arithmetic intensity is $O(n)$.
   - An A100 (40GB) can perform roughly 50 flops in the time it takes to read or write 4 bytes
     (single precision float)
