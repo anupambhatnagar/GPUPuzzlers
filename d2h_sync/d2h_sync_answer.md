@@ -105,11 +105,18 @@ there are thousands of GPU events with duration shorter than the corresponding C
 highlighting the issues with the `first_sum` and `second_sum` implementations.
 
 <!-- add to discssion:
-- naturally occurring sync points: item(); logging; few kernels
+- what's the fastest way to add?
 - why are sync points bad? 
-  - for loop
+  - inside a for loops are dangerous:
+    - obvious: sync is bad
+    - less obvious: no sync, still bad (many small kernel calls)
+      - solution: foreach kernel wrapper, fusion, operate on single tensor
+      - soltion: cudagraphs
   - forward reference to next lecture, stall the queue
+- how to find sync points?
+- naturally occurring sync points: item(); logging; few kernels
 - difference between device sync/stream sync/event sync (may be too stream focused, which we haven't talked about? 
+- HTA
 -->
 
 ### Key Takeaways
