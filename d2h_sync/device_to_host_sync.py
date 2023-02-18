@@ -1,7 +1,5 @@
-import time
 import torch
 from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity
-
 
 def first_sum(tensor):
     total = 0.0
@@ -9,13 +7,11 @@ def first_sum(tensor):
         total += tensor[i].cpu()
     return total
 
-
 def second_sum(tensor):
     total = torch.zeros(1, device='cuda')
     for i in range(tensor.size()[0]):
         total += tensor[i]
     return total
-
 
 def third_sum(tensor):
     total = 0.0
@@ -23,12 +19,6 @@ def third_sum(tensor):
     for i in range(tensor_on_cpu.size()[0]):
         total += tensor_on_cpu[i]
     return total
-
-
-def sync_and_sleep(delay: float = 0.001):
-    torch.cuda.synchronize()
-    time.sleep(delay)
-
 
 torch.manual_seed(145) # Fun fact: 145 = 1! + 4! +5!
 tensor = torch.rand(2**12, device='cuda')
@@ -39,11 +29,10 @@ with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
              with_stack = True) as prof:
 
     sum1 = first_sum(tensor)
-    sync_and_sleep()
-
     sum2 = second_sum(tensor)
-    sync_and_sleep()
-
     sum3 = third_sum(tensor)
+    sum4 = torch.sum(tensor)
+    cpu_tensor = torch.rand(2**12, device = 'cpu')
+    sum5 = torch.sum(cpu_tensor)
 
-assert sum1 == sum2.item() == sum3
+assert sum1 == sum2.item() == sum3 
