@@ -6,6 +6,9 @@ permalink: /faster-way-to-add-answer/
 
 The `first_sum` implementation is the slowest and the `third_sum` implementation is the
 fastest.
+<!-- mention that none of them are acceptable perf wise? btw, i tried cpu and gpu .sum(),
+small sizes are not getting close to peak mem bw, but 2^26 does achieve it on both, and gpu
+is ~10 faster as expected -->
 
 <p align = "center">
   <a href="/d2h_sync/annotated_d2h_sync_trace.png">
@@ -148,17 +151,17 @@ thread for proceeding until the event is completed.
 
 ### Analyzing with Holistic Trace Analysis
 
-Looking at the trace, you may note that the `cudaMemcpyAsync` event on the CPU is a longer duration
-than the corresponding operation (MemcpyDtoH) on the GPU. This may not be easy to find in general.
+Looking at the trace, you may note that the `cudamemcpyasync` event on the cpu is a longer duration
+than the corresponding operation (memcpydtoh) on the gpu. This may not be easy to find in general.
 
-The [Holistic Trace Analysis](https://github.com/facebookresearch/HolisticTraceAnalysis) (HTA)
-library provides a convenient way to identify this behavior using the [CUDA Kernel Launch
+The [Holistic Trace Analysis](https://github.com/facebookresearch/holistictraceanalysis) (HTA hta)
+library provides a convenient way to identify this behavior using the [Cuda Kernel Launch
 Statistics](https://hta.readthedocs.io/en/latest/source/features/cuda_kernel_launch_stats.html)
-feature. Using the PyTorch Profiler traces, HTA provides insights for performance debugging. In
+feature. Using the pytorch profiler traces, HTA provides insights for performance debugging. In
 particular, the
-[`get_cuda_kernel_launch_stats`](https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.TraceAnalysis.get_cuda_kernel_launch_stats)
-function displays the distribution of GPU kernels (in particular, `CudaLaunchKernel`,
-`CudaMemcpyAsync` and `CudaMemsetAsync`) whose duration is less than the corresponding CPU event.
+[`get_cuda_kernel_launch_stats`](https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.traceanalysis.get_cuda_kernel_launch_stats)
+function displays the distribution of gpu kernels (in particular, `cudaLaunchKernel`,
+`cudaMemcpyAsync` and `cudaMemsetAsync`) whose duration is less than the corresponding CPU event.
 
 Profiling each function as an independent python program we generated three traces and analyzed them
 with the `get_cuda_kernel_launch_stats` feature. One of the outputs from the
@@ -172,7 +175,7 @@ the `first_sum` and `second_sum` implementations.
   </a>
 </p>
 
-<p align = "center"> CUDA kernel launch stats - first_sum</p>
+<p align = "center"> cuda kernel launch stats - first_sum</p>
 
 <p align = "center">
   <a href="/d2h_sync/second_sum_kernel_launch_stats.png">
@@ -180,7 +183,7 @@ the `first_sum` and `second_sum` implementations.
   </a>
 </p>
 
-<p align = "center"> CUDA kernel launch stats - second_sum</p>
+<p align = "center"> cuda kernel launch stats - second_sum</p>
 
 <p align = "center">
   <a href="/d2h_sync/third_sum_kernel_launch_stats.png">
@@ -188,12 +191,12 @@ the `first_sum` and `second_sum` implementations.
   </a>
 </p>
 
-<p align = "center"> CUDA kernel launch stats - third_sum</p>
-The graphs above were generated using the following code snippet:
+<p align = "center"> cuda kernel launch stats - third_sum</p>
+the graphs above were generated using the following code snippet:
 
 ``` python
-from hta.trace_analysis import TraceAnalysis
-analyzer = TraceAnalysis(trace_dir = "/path/to/trace/folder")
+from hta.trace_analysis import traceanalysis
+analyzer = traceanalysis(trace_dir = "/path/to/trace/folder")
 kernel_stats = analyzer.get_cuda_kernel_launch_stats()
 ```
 
