@@ -16,7 +16,7 @@ fastest.
 The trace above shows that duration of each functions and highlights the numerous device to host
 memory copy kernels triggered in the `first_sum` implementation and the various vector ops taking
 place in the `second_sum` function. The trace file is available
-[here](/d2h_sync/addition_d2h_sync.json.gz).
+[here](/d2h_sync/addition_d2h_sync_final.json.gz).
 
 ### Analyzing first_sum - numerous device to host copies
 
@@ -82,8 +82,7 @@ def third_sum(a_tensor):
 
 Finally, the `third_sum` implementation copies the entire tensor to the CPU and pays a small one
 time cost to transfer data. Precisely speaking, 4 * 4096 bytes are transferred in 2 microseconds.
-Thus the achieved PCIe bandwidth is approximately 8 GB/sec. The amount of data transferred is
-Additionally, the low arithmetic intensity operations (i.e. summing values) is done on the CPU as
+Thus the achieved PCIe bandwidth is approximately 8 GB/sec. The summation is done on the CPU as
 `total` and the elements of the tensor are on the CPU.
 
 ## Discussion
@@ -99,8 +98,8 @@ the three functions above and `torch.sum`:
 | first_sum | 183 | 181 |
 | second_sum | 87 | 86  |
 | third_sum | 25 | 0.001 |
-| torch.sum() (tensor on CPU) | 1.8 | NA |
 | torch.sum() (tensor on GPU) | 0.161 | 0.009|
+| torch.sum() (tensor on CPU) | 1.8 | NA |
 
 __Synchronization points__
 
@@ -116,8 +115,10 @@ __Synchronization points__
 
 __Some naturally occurring synchronization points__
 
-- Call to `torch.cuda.synchronize()`, `.item()`, `.cpu()`
-- Logging statements
+- Call to `torch.cuda.synchronize()`
+- `.item()`, `.cpu()`, `torch.nonzero`, `torch.masked_select`
+- Logging statements from the GPU
+
 
 __Finding synchronization points__
 
@@ -188,7 +189,7 @@ the `first_sum` and `second_sum` implementations.
 </p>
 
 <p align = "center"> CUDA kernel launch stats - third_sum</p>
-The graph above was generated from the following three lines of code
+The graphs above were generated using the following code snippet:
 
 ``` python
 from hta.trace_analysis import TraceAnalysis
@@ -198,12 +199,12 @@ kernel_stats = analyzer.get_cuda_kernel_launch_stats()
 
 Here are the traces for the [first_sum](/d2h_sync/addition_first_sum.json.gz),
 [second_sum](/d2h_sync/addition_second_sum.json.gz) and
-[third_sum](/d2h_sync/addition_third_sum.json.gz) functions.
+[third_sum](/d2h_sync/addition_third_sum.json.gz) functions. <!--and a [notebook]() showing how to use HTA. -->
 
 ### Key Takeaway
 
-When possible, trade multiple small device to host copies with a few large device to host copies and
-be aware of device to host synchronization points.
+When possible, trade multiple small device to host copies (kernels) with a few large device to host
+copies (kernels) and be aware of device to host synchronization points.
 
 ### Explore More
 
