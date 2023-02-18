@@ -6,9 +6,6 @@ permalink: /faster-way-to-add-answer/
 
 The `first_sum` implementation is the slowest and the `third_sum` implementation is the
 fastest.
-<!-- mention that none of them are acceptable perf wise? btw, i tried cpu and gpu .sum(),
-small sizes are not getting close to peak mem bw, but 2^26 does achieve it on both, and gpu
-is ~10 faster as expected -->
 
 <p align = "center">
   <a href="/d2h_sync/annotated_d2h_sync_trace.png">
@@ -175,7 +172,7 @@ the `first_sum` and `second_sum` implementations.
   </a>
 </p>
 
-<p align = "center"> cuda kernel launch stats - first_sum</p>
+<p align = "center"> Cuda Kernel Launch Stats - first_sum</p>
 
 <p align = "center">
   <a href="/d2h_sync/second_sum_kernel_launch_stats.png">
@@ -183,7 +180,7 @@ the `first_sum` and `second_sum` implementations.
   </a>
 </p>
 
-<p align = "center"> cuda kernel launch stats - second_sum</p>
+<p align = "center"> Cuda Kernel Launch Stats - second_sum</p>
 
 <p align = "center">
   <a href="/d2h_sync/third_sum_kernel_launch_stats.png">
@@ -191,7 +188,7 @@ the `first_sum` and `second_sum` implementations.
   </a>
 </p>
 
-<p align = "center"> cuda kernel launch stats - third_sum</p>
+<p align = "center"> Cuda Kernel Launch Stats - third_sum</p>
 the graphs above were generated using the following code snippet:
 
 ``` python
