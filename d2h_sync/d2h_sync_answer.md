@@ -13,7 +13,7 @@ fastest.
   </a>
 </p>
 
-The trace above shows that duration of each functions and highlights the numerous device to host
+The trace above shows that duration of each function and highlights the numerous device to host
 memory copy kernels triggered in the `first_sum` implementation and the various vector ops taking
 place in the `second_sum` function. The trace file is available
 [here](/d2h_sync/addition_d2h_sync_final.json.gz).
@@ -40,7 +40,8 @@ def first_sum(a_tensor):
 
 In the `first_sum` function the number of copies from the device to the host is equal to the size of
 the tensor. These are incurred due to the `.cpu()` call in the for loop. Each `.cpu()` call moves a
-small amount of data from the GPU to the CPU and takes about 1 microseconds. These repeated calls,
+small amount of data from the GPU to the CPU and takes about 1 microsecond. Additionally, the gap betweeen
+consecutive kernels is about 40 microseconds. These repeated calls,
 highighted in the zoomed trace above make the `first_sum` implementation the slowest one.
 
 ### Analyzing second_sum - no device to host copies
@@ -61,13 +62,13 @@ def second_sum(a_tensor):
 
 <p align = "center"> Zoomed view - second_sum </p>
 
-The `second_sum` function initializes and places the `total` variable on the GPU. Addition of each
-element of `tensor` to `total` triggers vector op kernels. The addition is slowed due to the launch
+The `second_sum` function initializes and places the `total` tensor on the GPU. Addition of each
+element of `a_tensor` to `total` triggers vector op kernels. The addition is slowed due to the launch
 overhead of these kernels. The arithmetic intensity of vector ops involving small tensors is low and
 such operations can be done on the CPU, when reasonable. Even though __there are no instances of
 device to host copies and synchronizations__ in the `second_sum` implementation, the GPU is
 considerably underutilized. This can be seen by the ~20 microsecond gaps between consecutive kernels
-on the stream 7.
+on stream 7.
 
 ### Analyzing third_sum - addition on the CPU
 
@@ -90,8 +91,8 @@ Thus the achieved PCIe bandwidth is approximately 8 GB/sec. The summation is don
 __What is the fastest way to add in PyTorch?__
 
 `torch.sum` has better performance than the above implementations. The functions above are contrived
-examples to demonstrate device to host synchronization. The table below summarizes the time taken by
-the three functions above and `torch.sum`:
+examples to demonstrate device to host synchronization and launch overhead. The table below summarizes the time taken by
+the three functions above and `torch.sum`.
 
 | function| CPU time (ms) | GPU time(ms) |
 |--- | --- | --- |
@@ -107,7 +108,7 @@ __Synchronization points__
   degradation. These synchronization points are visible and avoidable. A better implementation would
   parallelize the computation by launching multiple threads rather than iterating over it.
 
-- As seen in the `second_sum` example an absence of synchronization points does not guarantee good
+- As seen in the `second_sum`, an absence of synchronization points does not guarantee good
   performance. Executing multiple small kernels iteratively does not utilize the GPU completely.
 
 - Synchronization points can stall the CUDA launch queue which can make the job CPU bound. More
@@ -129,7 +130,7 @@ namespaces.
 
 __Device synchronization vs. Stream synchronization vs. Event synchronization__
 
-A _stream_ is simply a sequence of operations that are performed in order on the device. Operations in
+A _stream_ is a sequence of operations that are performed in order on the device. Operations in
 different streams can be interleaved and in some cases overlapped - a property that can be used to
 hide data transfers between the host and the device.
 
@@ -144,20 +145,19 @@ execution on __all streams__.
 CPU thread until the device has executed all kernels on the __specified stream__.
 
 - Event synchronization can be triggered using `torch.cuda.Event.synchronize()`. It prevents the CPU
-thread for proceeding until the event is completed.
+thread from proceeding until the event is completed.
 
 ### Analyzing with Holistic Trace Analysis
 
-Looking at the trace, you may note that the `cudamemcpyasync` event on the cpu is a longer duration
-than the corresponding operation (memcpydtoh) on the gpu. This may not be easy to find in general.
+Looking at the trace, you may note that the `cudaMemcpyAsync` event on the CPU has a longer duration
+than the corresponding operation (MemcpyDtoH) on the GPU. This may not be easy to find in general.
 
-The [Holistic Trace Analysis](https://github.com/facebookresearch/holistictraceanalysis) (HTA hta)
+The [Holistic Trace Analysis](https://github.com/facebookresearch/holistictraceanalysis) (HTA)
 library provides a convenient way to identify this behavior using the [Cuda Kernel Launch
 Statistics](https://hta.readthedocs.io/en/latest/source/features/cuda_kernel_launch_stats.html)
-feature. Using the pytorch profiler traces, HTA provides insights for performance debugging. In
-particular, the
+feature. Using the PyTorch profiler traces, HTA provides insights for performance debugging. The
 [`get_cuda_kernel_launch_stats`](https://hta.readthedocs.io/en/latest/source/api/trace_analysis_api.html#hta.trace_analysis.traceanalysis.get_cuda_kernel_launch_stats)
-function displays the distribution of gpu kernels (in particular, `cudaLaunchKernel`,
+function displays the distribution of GPU kernels (in particular, `cudaLaunchKernel`,
 `cudaMemcpyAsync` and `cudaMemsetAsync`) whose duration is less than the corresponding CPU event.
 
 Profiling each function as an independent python program we generated three traces and analyzed them
@@ -189,7 +189,8 @@ the `first_sum` and `second_sum` implementations.
 </p>
 
 <p align = "center"> Cuda Kernel Launch Stats - third_sum</p>
-the graphs above were generated using the following code snippet:
+
+The graphs above were generated using the following code snippet:
 
 ``` python
 from hta.trace_analysis import traceanalysis
