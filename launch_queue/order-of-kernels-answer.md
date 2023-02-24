@@ -8,7 +8,8 @@ To keep the CPU from blocking when it dispatches compute kernels, the GPU mainta
 
 It takes time to send the kernel from CPU to GPU, and for small kernels, this time can exceed the time taken to execute the kernel on GPU. 
 
-- In Block 1, the GPU takes long enough to perform the large multiply for the queue to fill up with the small kernels. When the large matrix multiply finishes, the GPU immediately start executing the enqueued small matrix multiplies.
+- In Block 1, the GPU takes long enough to perform the large multiply for the queue to fill up with the small kernels. 
+  - When the large matrix multiply finishes, the GPU immediately start executing the enqueued small matrix multiplies.
 - In Block 2, the GPU completes each small matrix multiply before the next one is available, so it idles between the small kernels.
 
 More evidence that this is what's happening: increase the number of small kernels and after roughly 35 small matrix multiplies the gaps reappear.
@@ -31,7 +32,7 @@ Launch Queue Microarchitecture")
   - If the launch queue reaches a threshold (1024 entries), the CPU will block on
     calling a compute kernel. 
     - This can be problematic if there's other work the CPU could be doing, and should be avoided.
-  - Asynchronous launches can be disabled by setting CUDA\_LAUNCH\_BLOCKING=1. 
+  - Asynchronous launches can be disabled by setting `CUDA_LAUNCH_BLOCKING=1`. 
     - This is useful for debugging, especially in the context of multiple 
    streams - see the [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device) 
    for details. 
@@ -48,7 +49,7 @@ Where happens in the time from when Python method is invoked to when the kernel 
 ![Native CUDA Launch Overhead](/launch_queue/files/native_cuda.jpg?raw=true "Native Cuda Launch Overhead")
  - CUDA program: almost no difference between launching large gemm first and small gemms first - very little gap between the kenels
    - Actual kernel calls are identical: same kernel, same duration
-   - Big: `ampere\_sgemm\_64x32\_sliced1x4\_nn`, Small: `ampere\_sgemm\_32x32\_sliced1x4\_nn`
+   - Big: `ampere_sgemm_64x32_sliced1x4_nn`, Small: `ampere_sgemm_32x32_sliced1x4_nn`
    - NSYS trace [file](/launch_queue/files/launchqueue.qdrep), CUDA source [code](/launch_queue/files/launchqueue.cpp)
 
  - PyTorch is *supposed* to be a thin veneer around NVIDIA library code
@@ -70,8 +71,9 @@ Where happens in the time from when Python method is invoked to when the kernel 
 
 Nonempty queue -> hides launch overhead!
 - Avoid synchronization / gang up syncs where possible
-  - Example: CUDA Caching Allocator - avoids calling cudaFree() which is blocking by recycling memory within streams. (Details ([link](https://github.com/pytorch/pytorch/blob/master/c10/cuda/CUDACachingAllocator.cpp)), also Zach's beautiful blog post ([link](https://zdevito.github.io/2022/08/04/cuda-caching-allocator.html)).)
-- Reorder up big kernels (uncommon)
+  - Example: CUDA Caching Allocator - avoids calling cudaFree() which is blocking by recycling memory within streams. 
+    - Details: source code ([link](https://github.com/pytorch/pytorch/blob/master/c10/cuda/CUDACachingAllocator.cpp)), also Zach DeVito's blog post ([link](https://zdevito.github.io/2022/08/04/cuda-caching-allocator.html))
+- Reorder kernels big to small (uncommon)
 
 #### Launch Fewer Kernels
 
