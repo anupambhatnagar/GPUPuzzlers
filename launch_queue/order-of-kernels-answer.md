@@ -4,59 +4,102 @@ title: Answer
 permalink: /order-of-kernels-answer/
 ---
 
-The image shown below indicates that it is faster to do the large matrix squaring first. Precisely
-speaking, the trace shows that `large_matmul_first` function takes 449 microseconds and the
-`small_matmul_first` function takes 858 microseconds.
+To keep the CPU from blocking when it dispatches compute kernels, the GPU maintains a queue of kernel calls - the CUDA launch queue. (You can think of this as an example of the producer-consumer pattern, where the CPU is the producer and the GPU is the consumer.)
 
-<a href="/launch_queue/kernel_launch_annotated_trace.png">
-  <img src="/launch_queue/kernel_launch_annotated_trace.png" alt="Annotated Trace">
-</a>
+It takes time to send the kernel from CPU to GPU, and for small kernels, this time can exceed the time taken to execute the kernel on GPU. 
 
-To explain this behavior we begin by introducting a couple of terms:
+- In Block 1, the GPU takes long enough to perform the large multiply for the queue to fill up with the small kernels. Therefore, after the large matrix multiply finishes, the GPU can immediately start executing the small matrix multiplies.
+- In Block 2, the GPU completes each small matrix multiply before the next one is available, so it idles between the small kernels.
 
-_CUDA Kernel Launch Queue_ - The GPU maintains a queue of kernel calls in the order they are made
-by the host. After the kernels are dispatched, this ensures that the CPU is not blocked.
+Further evidence that this is what's happening comes from increasing the number of small kernels after the big kernel - 
 
-_PyTorch Dispatch Overhead_ - Time taken to launch a kernel and can dominate the time
-taken to perform the actual computation on the GPU.
-
-``` python
-def small_matmul_first():
-    for _ in range(10):
-       torch.matmul(small_matrix, small_matrix)
-    torch.matmul(large_matrix, large_matrix)
-```
-
-In the `small_matmul_first` function, the GPU completes each small matrix multiply before the next one is
-ready. The PyTorch dispatch overhead is larger than the time taken to do the small matrix
-multiplications and thus the GPU idles between the small matrix multiplications.
-
-``` python
-def large_matmul_first():
-    torch.matmul(large_matrix, large_matrix)
-    for _ in range(10):
-       torch.matmul(small_matrix, small_matrix)
-```
-
-In the `large_matmul_first` function, the GPU takes longer to perform the large matrix multiply,
-allowing the CUDA launch queue can fill up. While the large matrix multipcation executes the small matrix
-multiplications have been dispatched and the GPU can immediately compute the small matrix
-multiplications leading to a lower wall clock time.
+![More Small Kernels - Separation Starts](/launch_queue/files/more_small_kernels.jpg?raw=true "More Small Kernels")
+[Kineto Trace](/launch_queue/files/more_small_kernels.json "More Small Kernels Trace File")
 
 ## Discussion
 
-### Kernel Launch Queue
+### The CUDA Kernel Launch Queue 
+
+![CUDA Launch Queue Microarchitecture](/launch_queue/files/cuda_launch_queue_uarch.jpg?raw=true "CUDA
+Launch Queue Microarchitecture")
+
+_CUDA Kernel Launch Queue_ - The GPU maintains a queue of kernel calls in the order they are made 
+    by the CPU. After the kernels are dispatched, this ensures that the CPU is not blocked.
+  - The queue is hardware-managed: kernel launched when required resources become available.
+  - Each queue entry is quite small: under 4 KB of params. 
+  - Each stream has its own queue, can set priorities to individual streams. (Actually 3 queues: compute, D2H, H2D.)
+  - If the launch queue reaches a threshold (1024 entries), the CPU will block on
+    calling a compute kernel. This can be problematic if there's other work the CPU could be doing,
+    and should be avoided.
+  - If the CPU is running too far ahead of the GPU, out-of-memory can happen: the CPU thread issues 
+    the next allocation before the previous free completes on the GPU, so the CUDA caching 
+    allocator cannot reuse that block to serve the allocation. This has happened in practice, and the
+    solution is natural - use a [rate limiter](https://pytorch.s3.amazonaws.com/posters/ptc2022/E03.pdf).
+ - Asynchronous launches can be disabled by setting CUDA\_LAUNCH\_BLOCKING=1. This is useful for debugging, especially in the context of multiple 
+   streams - see the [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device) 
+   for details. There are some exceptions to asynchronous kernel launches, notably around CPU-GPU memory copies and synchronization primitives; 
+   we'll discuss these in another unit.
+
+### Kernel Dispatch Overhead
+
+Time from when Python method is invoked to when kernel actually starts executing on GPU (assuming launch queue is empty).
+
+Where does it come from?
+
+ - Obvious answer: PCIE (Wrong!)
+ - Proof: compare Kineto trace for PyTorch program to NSYS trace for functionally equivalent CUDA C program.
+ - CUDA program: almost no difference between launching large gemm first and small gemms first - very little gap between the kenels
+   - Actual kernel calls are identical: same kernel, same duration
+   - Big: ampere\_sgemm\_64x32\_sliced1x4\_nn, Small: ampere\_sgemm\_32x32\_sliced1x4\_nn
+![Native CUDA Launch Overhead](/launch_queue/files/native_cuda.jpg?raw=true "Native Cuda Launch Overhead")
+[NSYS trace](/launch_queue/files/launchqueue.qdrep)
+[CUDA Source](/launch_queue/files/launchqueue.cpp)
+
+ - PyTorch is supposed to be a thin veneer around NVIDIA library code
+   - Reality: the combination of PyTorch, PyBind, Python is quite expensive
+   - Many operations involved in dispatch
+     - Parsing arguments
+     - Finding right function to dispatch (v-table, signature scanning)
+     - Object construction (lots of memory overhead, call to CudaCachingAllocator)
+     - Stride calculation
+ - How does TensorFlow handle launch overhead?
+   - It's even worse!
+   - Reason: uses protobufs
+![TensorFlow Launch Overhead](/launch_queue/tensorflow.jpg?raw=true "TensorFlow Launch Overhead")
+[NSYS trace](/launch_queue/files/tf_profile.qdrep)
+[CUDA Source](/launch_queue/files/tf_launch_queue.py)
+
+### How to Reduce Launch Overhead?
+
+#### Don't Let the Queues Empty
+
+Empty queues -> GPU idle
+- Avoid synchronization / gang up syncs where possible
+- Move up big kernels (uncommon)
+
+#### Launch Fewer Kernels
+
+- "Horizontal Fusion" - `torch.\_foreach\_mul(P, Q)`, here P, Q are lists of matrices 
+  - Many more manual tricks, e.g., keep matrices A1, A2, A3 as a single 3D tensor
+- "Vertical Fusion" - `A.pow(3.14).mul(1.41).add(2.71)`
+   - Not just less launches - more significantly, avoids repeated memory reads/writes
+- PT2: torch.compile() does fusions automatically (also exceptional code generation)
+
+#### CUDAGraphs
+
+- Overhead comes from search: find functions, find memory
+- Real ML programs: very repetitive, e.g., training has 1M iterations
+  - Data changes, compute remains the same
+- Idea: record pointers, computation - then replay
+![CUDAGraph Idea](/launch_queue/files/cudagraph_blogpost.jpg?raw=true "CUDAGraph")
+- Can see the amortized benefit of forming the graph 
+![CUDAGraph Applied to MWE](/launch_queue/files/cudagraph_mwe.jpg?raw=true "CUDAGraph")
+[Kineto Trace](/launch_queue/files/cudagraph_mwe.json)
+[CUDAGraph MWE](/launch_queue/files/cudagraph_mwe.py)
+
 
 Rewrite the section as follows:
 1. explain the Microarchitecture diagram
-![CUDA Launch Queue Microarchitecture](/launch_queue/cuda_launch_queue_uarch.jpg?raw=true "CUDA
-Launch Queue Microarchitecture")
-  - Each queue entry is constrained to be very small: under 1 KB. (why? and how?) It's basically the
-    function pointer, and arguments, which are pointers to tensors. Notably, a host-side tensor
-    cannot be an argument - tensors have to be explicitly copied to and from device.
-  - If the kernel launch queue reaches a threshold (around 1000 entries), the host will block on
-    calling a compute kernel. This can be problematic if there's other work the host could be doing,
-    and should be avoided.
 
 1. What to do in order to write high performance programs
   - operator fusion
