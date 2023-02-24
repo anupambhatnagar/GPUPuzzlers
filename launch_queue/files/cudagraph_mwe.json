@@ -33848,6 +33848,5 @@
     "name": "Record Window End", "ph": "i", "s": "g",
     "pid": "", "tid": "", "ts": 1677198498899483
   }
-  ],
-  "traceName": "./cudagraph_mwe.json"
+  ]
 }

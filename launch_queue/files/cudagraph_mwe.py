@@ -1,7 +1,7 @@
 import time
 
 import torch
-from torch.autograd.profiler import profile
+from torch.profiler import profile, tensorboard_trace_handler, ProfilerActivity
 
 def do_work():
     a = torch.zeros((1600, 1600), device='cuda')
@@ -36,9 +36,8 @@ def do_work():
     time.sleep(0.001)
     torch.cuda.synchronize()
     
-with profile(use_cuda=True, use_kineto=True, record_shapes=True,
-             with_stack=True, with_flops=True) as p:
+with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
+             on_trace_ready=tensorboard_trace_handler(dir_name=f"./cudagraph_mwe", use_gzip=True),
+             record_shapes=True,
+             with_stack = True) as prof:
     time_taken = do_work()
-
-filename = f"./cudagraph_mwe.json"
-p.export_chrome_trace(filename)

@@ -6633,5 +6633,4 @@
     "pid": "", "tid": "", "ts": 1670017236198383
   }
   ],
-  "traceName": "./N=1600-cuda-queue-puzzlers.trace.json"
 }

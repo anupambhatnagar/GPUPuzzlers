@@ -7282,6 +7282,5 @@
     "name": "Record Window End", "ph": "i", "s": "g",
     "pid": "", "tid": "", "ts": 1677197158478064
   }
-  ],
-  "traceName": "./log_1600_100/devgpu017.ftw6.facebook.com_4076455.1677197158492.pt.trace.json"
+  ]
 }
