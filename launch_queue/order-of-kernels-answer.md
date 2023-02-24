@@ -31,12 +31,10 @@ Launch Queue Microarchitecture")
   - Each stream has its own queue, can set priorities to individual streams. (Actually 3 queues: compute, D2H, H2D.)
   - If the launch queue reaches a threshold (1024 entries), the CPU will block on
     calling a compute kernel. 
-    - This can be problematic if there's other work the CPU could be doing,
-    and should be avoided.
-  - If the CPU is running too far ahead of the GPU, out-of-memory can happen: the CPU thread issues 
-    the next allocation before the previous free completes on the GPU, so the CUDA caching 
-    allocator cannot reuse that block to serve the allocation. 
-    - This has happened in practice, and the solution is natural - use a [rate limiter](https://pytorch.s3.amazonaws.com/posters/ptc2022/E03.pdf).
+    - This can be problematic if there's other work the CPU could be doing, and should be avoided.
+  - Letting the CPU run too far ahead of the GPU can also be problematic: excessive allocations lead to OOM.
+    - Actual story is more nuanced - for single stream, the CUDA caching allocator is smart enough to recycle.
+    - With multiple streams, this has happened in practicel solution is to use a [rate limiter](https://pytorch.s3.amazonaws.com/posters/ptc2022/E03.pdf).
   - Asynchronous launches can be disabled by setting CUDA\_LAUNCH\_BLOCKING=1. 
     - This is useful for debugging, especially in the context of multiple 
    streams - see the [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device) 
@@ -54,110 +52,58 @@ Where happens in the time from when Python method is invoked to when the kernel 
    - Big: ampere\_sgemm\_64x32\_sliced1x4\_nn, Small: ampere\_sgemm\_32x32\_sliced1x4\_nn
    - NSYS trace [file](/launch_queue/files/launchqueue.qdrep), CUDA source [code](/launch_queue/files/launchqueue.cpp)
 
- - PyTorch is supposed to be a thin veneer around NVIDIA library code
-   - Reality: the combination of PyTorch, PyBind, Python is quite expensive
+ - PyTorch is *supposed* to be a thin veneer around NVIDIA library code
+   - Reality: the combination of PyTorch, PyBind, Python is expensive
    - Many operations involved in dispatch
      - Parsing arguments
      - Finding right function to dispatch (v-table, signature scanning)
      - Object construction (lots of memory overhead, call to CudaCachingAllocator)
-     - Stride calculation
+     - Stride calculation (host side, made complex by possibility of aliasing)
  - How does TensorFlow handle launch overhead?
    - It's even worse!
-   - Reason: uses protobufs
+   - Reason: adds protobufs
 ![TensorFlow Launch Overhead](/launch_queue/files/tensorflow.jpg?raw=true "TensorFlow Launch Overhead")
    - NSYS trace [file](/launch_queue/files/tf_profile.qdrep), TensorFlow source [code](/launch_queue/files/tf_launch_queue.py)
 
 ### How to Reduce Launch Overhead?
 
-#### Don't Let the Queues Empty
+#### Don't Let The Queue Empty
 
-Empty queues -> GPU idle
+Nonempty queue -> hides launch overhead!
 - Avoid synchronization / gang up syncs where possible
+  - Example: CUDA Caching Allocator - avoids calling cudaFree() which is blocking by recycling memory within streams. (Details ([link](https://github.com/pytorch/pytorch/blob/master/c10/cuda/CUDACachingAllocator.cpp)), also Zach's beautiful blog post ([link](https://zdevito.github.io/2022/08/04/cuda-caching-allocator.html)).)
 - Move up big kernels (uncommon)
 
 #### Launch Fewer Kernels
 
-- "Horizontal Fusion" - `torch._foreach_mul(P, Q)`, here P, Q are lists of matrices 
-  - Many more manual tricks, e.g., keep matrices A1, A2, A3 as a single 3D tensor
-- "Vertical Fusion" - `A.pow(3.14).mul(1.41).add(2.71)`
-   - Not just less launches - more significantly, avoids repeated memory reads/writes
-- PT2: `torch.compile()` does fusions automatically (also exceptional code generation)
+- Fusion: combine kernels (["Optimizing Production PyTorch Models’ Performance with Graph Transformations"](https://pytorch.org/blog/optimizing-production-pytorch-performance-with-graph-transformations/))
+  - "Horizontal Fusion" - `torch._foreach_mul(P, Q)`, here `P`, `Q` are lists of matrices 
+    - Comprehensive list of `torch._foreach` methods ([link](https://pytorch.org/cppdocs/api/file_build_aten_src_ATen_Functions.h.html#file-build-aten-src-aten-functions-h))
+    - Many more manual tricks, e.g., keep matrices A1, A2, A3 as a single 3D tensor
+  - "Vertical Fusion" - `A.pow(3.14).mul(1.41).add(2.71)` ([link](https://pytorch.org/cppdocs/api/file_build_aten_src_ATen_Functions.h.html#file-build-aten-src-aten-functions-h))
+     - Not just less launches: more significantly, avoids repeated memory reads/writes - great solution to low flops for vector operations!
+- PT2: `torch.compile()` does fusions automatically (also exceptional code generation) ([link](https://pytorch.org/tutorials/intermediate/torch_compile_tutorial.html))
 
-#### CUDAGraphs
+#### CUDA Graphs
 
 - Overhead comes from search: find functions, find memory
 - Real ML programs: very repetitive, e.g., training has 1M iterations
   - Data changes, compute remains the same
-- Idea: record pointers, computation - then replay
+- Idea: record pointers & computation - then replay
 ![CUDAGraph Idea](/launch_queue/files/cudagraph_blogpost.jpg?raw=true "CUDAGraph")
 - Can see the amortized benefit of forming the graph 
 ![CUDAGraph Applied to MWE](/launch_queue/files/cudagraph_mwe.jpg?raw=true "CUDAGraph")
 - Kineto trace [file](/launch_queue/files/cudagraph_mwe.json), CUDAGraph MWE [file](/launch_queue/files/cudagraph_mwe.py)
+- Reference: [Accelerating PyTorch with CUDA Graphs](https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/)
 
-# TODO: discard
+#### Eschew PyTorch
 
-Rewrite the section as follows:
-1. explain the Microarchitecture diagram
+- AI Template: do it all in CUDA C - currently, inference only ([link](https://github.com/facebookincubator/AITemplate))
+- [tch-rs](https://github.com/LaurentMazare/tch-rs): Rust bindings for C++ API of PyTorch
+  - "Rust is a modern systems programming language focusing on safety, speed, and concurrency. It accomplishes these goals by being memory safe without using garbage collection."
+  - Surprisingly, showed no gain over PyTorch
+![Rust Launch Overhead](/launch_queue/files/rust.jpg?raw=true "Rust")
 
-1. What to do in order to write high performance programs
-  - operator fusion
-  - reorder independent operations (as in this example)
-1. What are some things to watch out for
-  - don't let the queue flush out
-1. Empirical observation
-  - performing more small matmuls
+### What will you remember in 10 years?
 
-1. Discuss notable exception cases (to be used as a teaser for future lessons)
-1. Important: the GPU maintains one queue per stream. (actually, the kernel launch queue on a stream
-  is subdivided into execution queue, D2H copy queue and H2D copy queue within the stream.
-
-
----
-Rough notes below
-
-
-
-One of the guiding principles for desinging high performance PyTorch programs is to keep the
-kernel launch queue non-empty. Some ways to achieve this are:
-
-1. Operator fusion, wherein we do more work in a single kernel.
-1. Avoiding operations that force the queue to be flushed - a common example is a GPU to CPU copy,
-   which leads to a read-after-write data hazard. (Flushing the queue is analogous to stalling the
-   pipeline in a pipelined processor.)
-1. Reordering independent operations to bring the slower operations to the front of the queue (this
-    example).
-
-1. There are some exceptions to asynchronous kernel launches, notably around CPU-GPU memory copies
-  and synchronization primitives; we'll discuss these in another unit.
-
-1. Asynchronous launches can be disabled by setting `CUDA_LAUNCH_BLOCKING=1`. This is useful for
-   debugging, especially in the context of multiple streams - [see the CUDA Toolkit Documentation
-   for details](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device).
-
-
-1. If we performed several more small matrix multiplications after the large one, we would expect at
-   some point the CUDA launch queue will empty out (since the service rate is higher than the
-   arrival rate). Empirically, this happens if we have 40 or more small matrix multiplications.
-
-1. In this unit, we're working with a single
-   [stream](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#streams). In general
-   the GPU maintains multiple queues, one per stream. (so?)
-
-<!--- from https://slideplayer.com/slide/8211225/ -->
-<!--- see also http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
-<!--
-
-- NVIDIA offers a timeline viewer called NSIGHT that's analogous to Kineto, though less tightly coupled to PyTorch. Here's an NSIGHT trace that provides ground truth for the program we studied - it shows Kineto has high fidelity.
-![NSIGHT Trace for Kernel Launch](nsight-launch-queue.jpg?raw=true "NSIGHT Trace for Kernel Launch")
-
-
-- TODO: from Yueming, add NSIGHT traces, understand what is happening there (sending multiple kernels in one shot?)
-- TODO: cudnn optimization enable, see if that leads to pytorch matching CUDA code
-- TODO: summarize jason/kimish insights into launch overhead
-- TODO: see if we can trace PCIE to see how much that contributes and if CUDA graph/CUDA code do group transactions
-- TODO: explain need for Kineto and CUPTI - profiler is not enough
--->
-
-
-![CUDA Launch Queue Trace](/launch_queue/cuda_launch_queue.jpg?raw=true "CUDA Launch Queue Trace")
-
+Kernel launch overhead can kill performance - full queues, fusion, CUDA Graphs, eschewing PyTorch are solutions.
