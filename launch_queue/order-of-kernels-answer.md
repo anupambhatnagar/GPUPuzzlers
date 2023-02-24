@@ -13,8 +13,13 @@ It takes time to send the kernel from CPU to GPU, and for small kernels, this ti
 - In Block 2, the GPU completes each small matrix multiply before the next one is available, so it idles between the small kernels.
 
 More evidence that this is what's happening: increase the number of small kernels and after roughly 35 small matrix multiplies the gaps reappear.
+<!-- ![More Small Kernels - Separation Starts](/launch_queue/files/more_small_kernels.jpg?raw=true "More Small Kernels") -->
 
-![More Small Kernels - Separation Starts](/launch_queue/files/more_small_kernels.jpg?raw=true "More Small Kernels")
+<p align = "center">
+  <a href="/launch_queue/files/more_small_kernels.jpg">
+    <img src = "/launch_queue/files/more_small_kernels.jpg">
+  </a>
+</p>
 
   - Kineto trace [file](/launch_queue/files/more_small_kernels.json "More Small Kernels Trace File")
 
@@ -22,8 +27,14 @@ More evidence that this is what's happening: increase the number of small kernel
 
 ### The CUDA Kernel Launch Queue 
 
-![CUDA Launch Queue Microarchitecture](/launch_queue/files/cuda_launch_queue_uarch.jpg?raw=true "CUDA
-Launch Queue Microarchitecture")
+<!-- ![CUDA Launch Queue Microarchitecture](/launch_queue/files/cuda_launch_queue_uarch.jpg?raw=true "CUDA
+Launch Queue Microarchitecture") -->
+
+<p align = "center">
+  <a href="/launch_queue/files/cuda_launch_queue_uarch.jpg">
+    <img src = "/launch_queue/files/cuda_launch_queue_uarch.jpg">
+  </a>
+</p>
 
   - The GPU maintains a queue of kernel calls in the order they are made by the CPU. 
   - The queue is hardware-managed: kernels launch when required resources become available.
@@ -46,7 +57,14 @@ Where happens in the time from when Python method is invoked to when the kernel 
 
  - Obvious answer: PCIE (Wrong!)
    - Proof: compare Kineto trace for PyTorch program to NSYS trace for functionally equivalent CUDA C program.
-![Native CUDA Launch Overhead](/launch_queue/files/native_cuda.jpg?raw=true "Native Cuda Launch Overhead")
+<!-- ![Native CUDA Launch Overhead](/launch_queue/files/native_cuda.jpg?raw=true "Native Cuda Launch Overhead") -->
+
+<p align = "center">
+  <a href="/launch_queue/files/native_cuda.jpg">
+    <img src = "/launch_queue/files/native_cuda.jpg">
+  </a>
+</p>
+
  - CUDA program: almost no difference between launching large gemm first and small gemms first - very little gap between the kenels
    - Actual kernel calls are identical: same kernel, same duration
    - Big: `ampere_sgemm_64x32_sliced1x4_nn`, Small: `ampere_sgemm_32x32_sliced1x4_nn`
@@ -59,10 +77,16 @@ Where happens in the time from when Python method is invoked to when the kernel 
      - Finding right function to dispatch (v-table, signature scanning)
      - Object construction (lots of memory overhead, call to CudaCachingAllocator)
      - Stride calculation (host side, made complex by possibility of aliasing)
- - How does TensorFlow handle launch overhead?
-   - It's even worse!
+ - TensorFlow is even worse!
    - Reason: adds protobufs
-![TensorFlow Launch Overhead](/launch_queue/files/tensorflow.jpg?raw=true "TensorFlow Launch Overhead")
+
+<!-- ![TensorFlow Launch Overhead](/launch_queue/files/tensorflow.jpg?raw=true "TensorFlow Launch Overhead") -->
+<p align = "center">
+  <a href="/launch_queue/files/tensorflow.jpg">
+    <img src = "/launch_queue/files/tensorflow.jpg">
+  </a>
+</p>
+
    - NSYS trace [file](/launch_queue/files/tf_profile.qdrep), TensorFlow source [code](/launch_queue/files/tf_launch_queue.py)
 
 ### How to Reduce Launch Overhead?
@@ -91,9 +115,21 @@ Nonempty queue -> hides launch overhead!
 - Real ML programs: very repetitive, e.g., training has 1M iterations
   - Data changes, compute remains the same
 - Idea: record pointers & computation; replay
-![CUDAGraph Idea](/launch_queue/files/cudagraph_blogpost.jpg?raw=true "CUDAGraph")
+<!-- ![CUDAGraph Idea](/launch_queue/files/cudagraph_blogpost.jpg?raw=true "CUDAGraph") -->
+<p align = "center">
+  <a href="/launch_queue/files/cudagraph_blogpost.jpg">
+    <img src = "/launch_queue/files/cudagraph_blogpost.jpg">
+  </a>
+</p>
+
 - Can see the amortized benefit of forming the graph 
-![CUDAGraph Applied to MWE](/launch_queue/files/cudagraph_mwe.jpg?raw=true "CUDAGraph")
+<!-- ![CUDAGraph Applied to MWE](/launch_queue/files/cudagraph_mwe.jpg?raw=true "CUDAGraph") -->
+<p align = "center">
+  <a href="/launch_queue/files/cudagraph_mwe.jpg">
+    <img src = "/launch_queue/files/cudagraph_mwe.jpg">
+  </a>
+</p>
+
 - Kineto trace [file](/launch_queue/files/cudagraph_mwe.json), CUDAGraph MWE [file](/launch_queue/files/cudagraph_mwe.py)
 - Reference: [Accelerating PyTorch with CUDA Graphs](https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/)
 
@@ -103,7 +139,13 @@ Nonempty queue -> hides launch overhead!
 - [tch-rs](https://github.com/LaurentMazare/tch-rs): Rust bindings for C++ API of PyTorch
   - "Rust is a modern systems programming language focusing on safety, speed, and concurrency. It accomplishes these goals by being memory safe without using garbage collection."
   - Surprisingly, showed no gain over PyTorch
-![Rust Launch Overhead](/launch_queue/files/rust.jpg?raw=true "Rust")
+<!-- ![Rust Launch Overhead](/launch_queue/files/rust.jpg?raw=true "Rust") -->
+<p align = "center">
+  <a href="/launch_queue/files/rust.jpg">
+    <img src = "/launch_queue/files/rust.jpg">
+  </a>
+</p>
+
 
 ### What will you remember in 10 years?
 
