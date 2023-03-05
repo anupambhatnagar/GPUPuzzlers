@@ -9,7 +9,7 @@ permalink: /tensor-cores-answer/
    wrapping the code with `torch.cuda.cudart().cudaProfilerStart()` and
    `torch.cuda.cudart().cudaProfilerStop()`) or using the command line utility
    [dcgmi](https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/getting-started.html).
-   
+
    - Let $w$ denote the word size (4 for FP32 and 2 for FP16 and BF16). The arithmetic intensity of
      matrix multiplication is $\frac{2n^3}{3 w n^2} = \frac{2n}{3w}$ as there are approximately
      $2n^3$ operations required to multiply two square matrices of size $n$ and the number of reads
@@ -24,14 +24,12 @@ permalink: /tensor-cores-answer/
     - The machine balance is computed as the ratio of flops to memory bandwidth. In the roofline
     diagram the machine balance (i.e. the cusp in the roofline). For $n=512$,
 
-
-
     | Numeric format | Word size | Machine balance | Arithmetic intensity (2n/3w)|
     | --- | --- | --- | --- |
-    | FP32 | 4  | 19.5/1.55 ~ 12 | ~ 85 | 
+    | FP32 | 4  | 19.5/1.55 ~ 12 | ~ 85 |
     | TF32 | 4 | 156/1.55 ~ 100 | ~ 85 |
-    | FP16 | 2 | 312/1.55 ~ 201 | ~ 170 | 
-    | BF16 | 2 | 312/1.55 ~ 201 | ~ 170 | 
+    | FP16 | 2 | 312/1.55 ~ 201 | ~ 170 |
+    | BF16 | 2 | 312/1.55 ~ 201 | ~ 170 |
 
     Comparing the arithmetic intensity with the machine balance we see that the first matrix
     multiplication is compute bound and the remaining three are memory bandwidth bound.
@@ -41,13 +39,12 @@ permalink: /tensor-cores-answer/
    1, so the accuracy of bf16 compared to fp16 is 3 bits
    less. As $2^3 = 8$, the accuracy loss is 8 times when using bf16.
 
-
 ## Discussion
 
 **Can CUDA cores and Tensor cores be used concurrently?**
 
 CUDA cores and tensor cores can be utilized simultaneously by distributing the operations across
-multiple CUDA streams. A few things to keep in mind which trying to achieve this are: 
+multiple CUDA streams. A few things to keep in mind which trying to achieve this are:
 
   1. CUDA_LAUNCH_BLOCKING should be set to `False` to take advantage of concurrent execution.
   1. Kernels used on one stream should not saturate the GPU.
@@ -83,8 +80,8 @@ transformer architecture during the training phase.
 
 | Operation categories      | Uses tensor cores | Usually bound by  |
 | ---                       | ---               | ---               |
-| Matmul                    | Yes               | Compute           | 
-| Elementwise (Activation)  | No                | Memory bandwidth  |        
+| Matmul                    | Yes               | Compute           |
+| Elementwise (Activation)  | No                | Memory bandwidth  |
 | Reduction(Pooling)        | No                | Memory bandwidth  |
 
 **How can good utilization of tensor cores be ensured?**
@@ -114,37 +111,9 @@ then there are wasted cycles which lead to inefficiency.
 [Tile
 quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#tile-quant) means that the work is quantized to the size of the tile. It happens when the matrix dimensions are not evenly divisible by the thread block size.
 
-<!--
-<p align = "center">
-  <a href="/tensor_cores/tile_quantization.png">
-    <img src="/tensor_cores/tile_quantization.png">
-  </a>
-</p>
-
-
-_TODO: paraphrase_
-
-While CUDA libraries ensure that invalid memory accesses are not performed by any tiles, all tiles
-perform the same amount of arithmetic operations. In the image on the right the amount of arithmetic
-operations is 1.5x the amount on the left despite needing only a fraction more algorithmically. 
-This shows that highest utilization is achieved when the output matrix size is evenly divisible by
-the tile dimensions.
--->
-
 **Wave Quantization**
 
-[Wave quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#wave-quant) means that the work is quantized to the size of the GPU. It happens when the number of thread blocks is not evenly divisible by the number of SM's.  
-
-<!--
-<p align = "center">
-  <a href="/tensor_cores/wave_quantization.png">
-    <img src="/tensor_cores/wave_quantization.png">
-  </a>
-</p>
-_TODO: paraphrase_
-
-Since the A100 GPU has 108 SMs; in the particular case of 256x128 thread block tiles, it can execute one thread block per SM, leading to a wave size of 108 tiles that can execute simultaneously. Thus, GPU utilization will be highest when the number of tiles is an integer multiple of 108 or just below.
--->
+[Wave quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#wave-quant) means that the work is quantized to the size of the GPU. It happens when the number of thread blocks is not evenly divisible by the number of SM's.
 
 ## What should you remember in 10 years?
 
