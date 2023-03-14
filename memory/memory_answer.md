@@ -263,7 +263,6 @@ that we can get away with $n^2$ reads from $B$ and $C$ respectively. This
 [page](http://www.gpupuzzlers.com/memory-hierarchy) summarizes the GPU memory hierarchy and here’s
 an [example of developing a fast GEMM](https://siboehm.com/articles/22/CUDA-MMM).
 
-
 #### Transpose in O(1) time
 
 `A.transpose(0,1)` is an $O(1)$ operation, not involving any GPU-side compute - it simply updates
@@ -272,7 +271,6 @@ contains a length $m$ tuple of “strides” ($s_1,s_2,\ldots s_m$). The entry $
 is at entry $s1 \cdot i_1 + s_2 \cdot i_2 + \dots + s_m \cdot i_m$ in the 1D array that stores $T$’s
 entries. For an $n \times n$ matrix $A$, $s_1=n$, and
 $s_2=1$. Using $s_1=1$ and $s_2=n$ has the effect of transposing $A$.
-
 
 ### What should you remember 10 years?
 
@@ -287,4 +285,3 @@ mental model of the GPU memory hierarchy.
 - [NVIDIA Memory Optimizations course](https://courses.nvidia.com/courses/course-v1:DLI+L-AC-02+V1/)
 - [Triton PhD thesis](https://dash.harvard.edu/bitstream/handle/1/37368966/ptillet-dissertation-final.pdf?sequence=1&isAllowed=y)
 - [Triton tutorial](https://triton-lang.org/master/getting-started/tutorials/index.html)
-
