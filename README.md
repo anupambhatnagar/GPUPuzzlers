@@ -35,7 +35,7 @@ should state the topics which will be discussed.
 1. launch_queue: CUDA launch queue
 1. memory: impact of using pinned memory, CUDA caching allocator
 1. tensor_cores: achieving higher TFLOPS using tensor cores
-1. cuda_streams: concurrent kernel execution (data transfer and computation using cuda streams)
+1. streams: concurrent kernel execution (data transfer and computation using cuda streams)
 1. kernel_fusion: horizontal and vertical kernel fusion
 1. communication: nccl, impact of using nvswitch, pcie
 
