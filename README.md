@@ -33,17 +33,11 @@ should state the topics which will be discussed.
 1. vector_flops:  flops and memory bandwith of vector ops and gemm
 1. d2h_sync: device to host synchronization and its pitfalls
 1. launch_queue: CUDA launch queue
-1. pinned_memory: impact of using pinned memory
+1. memory: impact of using pinned memory, CUDA caching allocator
 1. tensor_cores: achieving higher TFLOPS using tensor cores
-1. cuda_streams1: concurrent memory transfer and computation using cuda streams
-1. cuda_stream2: concurrent communication and computation
-1. horizontal_kernel_fusion:
-1. vertical_kernel_fusion:
-1. memory_access: impact of accessing data from various memory levels
-1. nondeterminism:
-1. inter_gpu_communication: impact of using nvswitch, pcie
-1. nccl_communication:
-
+1. cuda_streams: concurrent kernel execution (data transfer and computation using cuda streams)
+1. kernel_fusion: horizontal and vertical kernel fusion
+1. communication: nccl, impact of using nvswitch, pcie
 
 ## Steps to build the website locally (from the main branch)
 
