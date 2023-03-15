@@ -80,7 +80,7 @@ __Cache consistency__: all views of the data at an address are the same.
 
 __Core__: a processing unit that executes a single instruction stream. A multicore processor consists of a set of cores, each executing its own instruction stream.
 
-__Gustafson's Law__: [Gustafson's law](http://www.johngustafson.net/pubs/pub13/amdahl.htm
+__Gustafson's Law__: [Gustafson's law](https://www.johngustafson.net/pubs/pub13/amdahl.htm
 ) states that as the problem size scales with the number of
 processors the maximum speedup $(S)$ a program can achieve is:
 

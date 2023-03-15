@@ -104,4 +104,4 @@ Matrix multiplication achieves close to advertised performance. This is because 
   - Embedding table lookup is a common operation in recommendation models, and it requires sorting the indices. This is achieved via a custom radix-sort, that has better locality of reference.
 - Within Meta, the GPUs spend most time on vectorized functors (aka point-wise ops), followed by embedding bag lookups, followed by matrix multiplication.
 <!--- from https://slideplayer.com/slide/8211225/ -->
-<!--- see also http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
+<!--- see also https://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
