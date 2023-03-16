@@ -13,7 +13,7 @@ different implementations provided. Which implementation achieves better overlap
 attached [trace file](/streams/swimming_in_streams.json.gz) contains the answer. Check if it matches your intuition.
 
 ```python
-def streams1():
+def non_blocking_streams():
     with torch.cuda.stream(s1):
         for i in range(len(matrix_on_gpu)):
             torch.matmul(matrix_on_gpu[i], matrix_on_gpu[i])
@@ -26,7 +26,7 @@ def streams1():
         for i in range(len(data_on_cpu)):
             data_on_cpu[i].to(cuda, non_blocking=True)
 
-def streams2():
+def blocking_streams():
     with torch.cuda.stream(s1):
         for i in range(len(matrix_on_gpu)):
             torch.matmul(matrix_on_gpu[i], matrix_on_gpu[i])
