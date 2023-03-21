@@ -243,7 +243,7 @@ overlapping with HBM reads/writes.
 
 Optimizing memory access is one of the most challenging aspects of CUDA programming. For example,
 when we computed the [arithmetic intensity of square matrix
-multiplication](http://www.gpupuzzlers.com/tensor-cores-answer/), we wrote it as
+multiplication](/tensor-cores-answer/), we wrote it as
 $\frac{2n^3}{3w \cdot n^2}$, where $n$ is the matrix dimension and $w$ is the word size.
 
 The justification we gave was that to compute $A = B \times C$, we need to read each element of $B$ and $C$, and
@@ -260,7 +260,7 @@ $$
 
 It’s through clever use of the memory hierarchy (including the coalescing and banking techniques)
 that we can get away with $n^2$ reads from $B$ and $C$ respectively. This
-[page](http://www.gpupuzzlers.com/memory-hierarchy) summarizes the GPU memory hierarchy and here’s
+[page](/memory-hierarchy/) summarizes the GPU memory hierarchy and here’s
 an [example of developing a fast GEMM](https://siboehm.com/articles/22/CUDA-MMM).
 
 #### Transpose in O(1) time

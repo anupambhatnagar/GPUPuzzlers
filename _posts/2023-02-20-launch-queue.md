@@ -24,3 +24,5 @@ def large_small():
     for _ in range(10):
        torch.matmul(small_matrix, small_matrix)
 ```
+
+[See answer and discussion](/order-of-kernels-answer/)

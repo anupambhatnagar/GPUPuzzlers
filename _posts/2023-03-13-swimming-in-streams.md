@@ -9,9 +9,7 @@ A CUDA stream is a sequence of commands (possibly issued by different host threa
 order. Applications can manage concurrent execution of kernels through multiple streams.
 
 This puzzler executes kernels and does data transfer concurrently using multiple streams. There are two
-different implementations provided. Which implementation achieves better overlap and why? The
-attached [trace file](/streams/swimming_in_streams.json.gz) contains the answer. Check if it matches your intuition.
-
+different implementations provided. Which implementation achieves better overlap and why?
 ```python
 def non_blocking_streams():
     with torch.cuda.stream(first_stream):
@@ -50,6 +48,8 @@ data_on_gpu = [torch.rand((1024, 1024), device=cuda) for _ in range(100)]
 data_on_cpu = [torch.rand((1024, 1024), device=cpu) for _ in range(100)]
 matrix_on_gpu = [torch.rand((1024, 1024), device=cuda) for _ in range(1000)]
 ```
+The attached [trace file](/streams/swimming_in_streams.json.gz) contains the answer. Check if it
+matches your intuition.
 
 [See answer and discussion](/swimming-in-streams-answer)
 
