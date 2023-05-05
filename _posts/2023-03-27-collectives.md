@@ -6,20 +6,20 @@ excerpt: Communication matters!
 ---
 
 <p align = "center">
-  <a href="/collectives/topology.png">
-    <img src="/collectives/topology.png">
+  <a href="/collectives/server_topology_with_gpu_id.png">
+    <img src="/collectives/server_topology_with_gpu_id.png">
   </a>
-  Server topology
 </p>
 
-## Puzzler 1: Bandwidth and Topology
+<p align = "center">
+  Server topology
+</p>
+## Puzzler 1: Peer to Peer Bandwidth
 
-The figure above shows that network topology of the GPUs in a server. As observed from the
-[trace](/collectives/p2p_bandwidth.json.gz), the `data_transfer` function below does a peer-to-peer
-(P2P) copy of a list of tensors from GPU 0 to GPU 1, GPU 2 and GPU 4 in 4.5 ms, 53.2 ms and 8.8 ms
-respectively.
-
-Why do the P2P copies to different GPUs vary so much?
+The figure above shows the network topology of the GPUs in a server. This is commonly referred to as
+the Hypercube topology. As observed from the [trace](/collectives/p2p_bandwidth.json.gz), the
+`data_transfer` function copies a list of tensors from GPU 0 to GPU 1, GPU 2 and GPU 4 in 4.5 ms,
+53.2 ms and 8.8 ms respectively. Why do the peer to peer copies to different GPUs vary so much?
 
 <p align = "center">
   <a href="/collectives/p2p_trace.png">
@@ -64,46 +64,45 @@ All_Reduce is mathematically equivalent to Reduce followed by Broadcast. With so
 prove that All_Reduce is equivalent to Reduce_Scatter followed by All_Gather.
 
 The functions below use All_Reduce, Reduce + Broadcast, and Reduce_Scatter + All_Gather to sum
-tensors. What are the factors influence the performance of the implementations given?
+tensors. What are the factors influencing the performance of the given implementations?
 
 ``` python
-import torch
-import torch.distributed as dist
-
-# approach 1 - call All_Reduce directly
+# Approach 1 - call All_Reduce directly.
 def all_reduce_demo(size, local_rank, tensor_size=2**20):
-  group = dist.new_group(list(range(size)))
+  group = torch.distributed.new_group(list(range(size)))
   device = torch.device(f"cuda:{local_rank}")
   tensor = torch.rand(tensor_size, device=device)
   dist.all_reduce(tensor, op=dist.ReduceOp.SUM, group=group)
 
-# approach 2 - implement All_Reduce using Reduce and Broadcast
+# Approach 2 - implement All_Reduce using Reduce and Broadcast.
 def reduce_broadcast_demo(size, local_rank, tensor_size=2**20):
-  group = dist.new_group(list(range(size)))
+  group = torch.distributed.new_group(list(range(size)))
   device = torch.device(f"cuda:{local_rank}")
   tensor = torch.rand(tensor_size, device=device)
 
-  dist.reduce(tensor, dst=0, op=dist.ReduceOp.SUM, group=group)
-  dist.broadcast(tensor, src=0, group=group)
+  torch.distributed.reduce(tensor, dst=0, op=dist.ReduceOp.SUM, group=group)
+  torch.distributed.broadcast(tensor, src=0, group=group)
 
-# approach 3 - implement All_Reduce using Reduce_Scatter and All_Gather
+# Approach 3 - implement All_Reduce using Reduce_Scatter and All_Gather.
 def reduce_scatter_all_gather_demo(size, local_rank, tensor_size=2**20):
-  group = dist.new_group(list(range(size)))
+  group = torch.distributed.new_group(list(range(size)))
   device = torch.device(f"cuda:{local_rank}")
 
   reduce_scatter_input = torch.rand(tensor_size, device=device)
   reduce_scatter_output = torch.zeros(tensor_size, device=device)
   all_gather_output = torch.zeros(tensor_size, device=device)
 
-  dist.reduce_scatter_tensor(
+  torch.distributed.reduce_scatter_tensor(
     reduce_scatter_output,
     reduce_scatter_input,
     op=dist.ReduceOp.SUM,
     group=group
   )
-  dist.all_gather_into_tensor(
+  torch.distributed.all_gather_into_tensor(
     all_gather_output,
     reduce_scatter_output,
     group=group
   )
 ```
+
+[See answer and discussion](/collectives-answer)
