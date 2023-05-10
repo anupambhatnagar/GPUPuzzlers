@@ -6,28 +6,34 @@ permalink: /collectives-answer/
 
 ### Puzzler 1: Peer to Peer Bandwidth
 
-The network topology within a server can be obtained executing `nvidia-smi topo -m` on the command
-line. The variance in the duration is due to the fact that the GPUs are connected to each other
-using different interconnects. The most common interconnects are NVLink (a direct GPU-to-GPU
-interconnect that scales multi-GPU input/output within the server) and PCIe.
+The differences in the duration of the P2P copies is due to the fact that the GPUs are connected to
+each other using different interconnects.
 
-GPU0 and GPU1 are connected via 4 NVLinks, GPU0 and GPU4 are connected via 2 NVLinks and GPU0 and
-GPU2 are connected via PCIe. In essence, the underlying topology is the main cause for the variation
-in the data transfer durations.
+The network topology within a server can be obtained executing `nvidia-smi topo -m` on the command
+line. The most common interconnects are NVLink (a direct GPU-to-GPU interconnect within the server)
+and PCIe. On our server, GPU0 and GPU1 are connected via 4 NVLinks, GPU0 and GPU4 are connected via
+2 NVLinks and GPU0 and GPU2 are connected via PCIe.
+
+
+
 
 ### Puzzler 2: Collective Performance
 
 While the All_Reduce, Reduce + Broadcast and Reduce_Scatter + All_Gather are mathematically equivalent
 their performance depends on:
 
-1. NCCL algorithm and protocol
+1. NCCL algorithm and protocol (NCCL algorithm is Nvidia speak for routing configuration)
 1. Network topology
 1. Number of GPUs
 1. Message size
 
-Empirically, we tested the Ring and Tree Algorithms on 8 and 16 GPUs with a 4GB message size and
-observed that
+Empirically, we tested the Ring and Tree Algorithms on 16 GPUs with 1GB and 2GB message sizes and
+observed the following timings (in milliseconds):
 
+| | 1GB message using Tree | 1GB message using Ring | 2GB message using Tree | 2GB message using Ring|
+| All Reduce | 2.2 | 4.7 | 4.6 | 13.5 |
+| Reduce, Broadcast (Total) |2.7, 0.8 (3.5) | 2.4, 3.0 (5.4) | 5.0, 1.7 (6.7) | 7.4, 3.8 (11.2) |
+| Reduce Scatter, All Gather (Total) | 21.5, 22.6 (44.1) | 37.3, 43.2 (80.5) | 41.6, 42.6 (84.2) |105.7, 106.1 (211.8) |
 
 
 ## Discussion
@@ -39,7 +45,8 @@ The available algorithms in NCCL are:
 1. Tree
 1. CollNet
 
-In the Ring and Tree algorithms the GPUs form a ring and tree respectively. CollNet can be used,
+In the Ring and Tree algorithms the GPUs form a ring and tree respectively. CollNet is more
+sophisticated. It can be used
 only when Infiniband is available. At a high level CollNet creates hierarchical rings and the Ring
 All Reduce can be broken down as: Inter-node Reduce Scatter followed by Intra-node All Reduce and
 then an Inter-node All Gather.
@@ -60,12 +67,11 @@ which computes heuristics for all possible algorithm and protocol combinations f
 collectives. The Auto Tuner executes once when NCCL is initialized. It performs an analysis for
 different combinations of algorithms and protocols and caches the results for subsequent use. The
 Auto Tuner uses the number of nodes, number of GPUs per node and the message size as parameters.
-Implicitly, it also uses the underlying toplogy and fabric to estimate the performance of the
-communication collectives along with the algorithms and protocols.
 
 __Does NCCL take the topology and interconnect into account?__
 
-Yes, the NCCL Auto Tuner does that implicitly under the hood.
+Yes, the NCCL Auto Tuner does that implicitly - the underlying toplogy and fabric determine the
+performance of the communication collectives along with the algorithms and protocols.
 
 __What is the difference between NCCL Tree and Ring algorithms?__
 
@@ -82,20 +88,30 @@ Yes, users can bypass NCCL but it strongly advised not to do so. NCCL implements
 algorithms and protocols along with efficient pipelining techniques and makes use of underlying
 topology and fabric which cannot be mimicked with a naive approach such as using `.to('cuda:3')`.
 
+<!---
+__What are the most commonly used interconnects within a node and across nodes?__
+
+  - Within a node
+    - PCIe
+    - NV Link
+
+  - Across nodes
+    - Ethernet
+    - PCIe
+    - NV Switch
+    - Infiniband
+---> 
 ## What should you remember in years to come?
 
 Communication plays a critical role in any distributed system. In the context of distributed
 training on several thousand GPUs communication libraries like NCCL utilize sophisticated
-algorithms and protocols which are opaque to a casual user. It is probably best to leave the
-communication optimizations to the experts in the domain.
+algorithms and protocols which are opaque to a casual user. It is best to leave the
+communication optimizations to NCCL and domain experts.
 
 ## Explore More
 
 - [NCCL Tests](https://github.com/NVIDIA/nccl-tests) a library to benchmark performance and
   correctness of NCCL operations.
-
 - Blogs on NCCL [1](https://developer.nvidia.com/blog/massively-scale-deep-learning-training-nccl-2-4/), [2](https://developer.nvidia.com/blog/doubling-all2all-performance-with-nvidia-collective-communication-library-2-12/).
-
-- NCCL on the Summit Supercomputer. [Slides by Sylvain Jeaugey](https://www.olcf.ornl.gov/wp-content/uploads/2019/12/Summit-NCCL.pdf).
-
+- [NCCL on the Summit Supercomputer](https://www.olcf.ornl.gov/wp-content/uploads/2019/12/Summit-NCCL.pdf). Slides by Sylvain Jeaugey
 - Learn about [SHARP](https://docs.nvidia.com/networking/display/sharpv214/Introduction).
