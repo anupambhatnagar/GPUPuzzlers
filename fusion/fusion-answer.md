@@ -141,8 +141,8 @@ __In our example, the maximum element-wise difference between compiled_fused and
 inputs was of the order of 1e-7. Why do the values differ?__
 
 - Vertical fusion can change numerics, because the code may perform operations in a different order,
-  and finite-precision arithmetic  is not associative (though it is commutative). For example, (0.1
-  + 0.2) + 0.3 differs from 0.1 + (0.2 + 0.3) by ~1e-16. The net effect of the noise introduced by
+  and finite-precision arithmetic  is not associative (though it is commutative). For example, (0.1 + 0.2) + 0.3
+  differs from 0.1 + (0.2 + 0.3) by ~1e-16. The net effect of the noise introduced by
   finite precision arithmetic depends on the compute graph and inputs.
 - Incidentally, horizontal fusion does not change numerics (assuming the underlying kernels are
   deterministic, which is [not always the
