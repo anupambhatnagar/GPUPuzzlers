@@ -202,7 +202,7 @@ Here are the traces for the [first_sum](/d2h_sync/addition_first_sum.json.gz),
 [second_sum](/d2h_sync/addition_second_sum.json.gz) and
 [third_sum](/d2h_sync/addition_third_sum.json.gz) functions. <!--and a [notebook]() showing how to use HTA. -->
 
-### What should you remember in 10 years?
+### What should you remember in years to come?
 
 When possible, trade multiple small device to host copies (kernels) with a few large device to host
 copies (kernels) and be aware of device to host synchronization points.

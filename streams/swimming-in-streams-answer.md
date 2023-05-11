@@ -232,7 +232,7 @@ about 350ms. This clearly demonstrates the impact of setting the priority on a s
 
 Here are the trace files for the [same_priority](/streams/same_priority_streams.json.gz) and [different_priority](/streams/different_priority_streams.json.gz) functions.
 
-## What should you remember in 10 years?
+## What should you remember in years to come?
 
 Streams provide a great mechanism to execute kernels concurrently but watch out for implicit
 synchronization events as they can be major blockers to achieving concurrency.

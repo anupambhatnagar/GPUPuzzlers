@@ -3,9 +3,10 @@ layout: post
 title: Communication is the Key to Success
 permalink: /posts/collectives/
 tags: NCCL
-excerpt: Data can be tranmitted in many ways but can you find the most efficient way?
+excerpt: Data can be transmitted in many ways but, can you find the most efficient way?
 ---
 
+## Puzzler 1: Peer to Peer Bandwidth
 <p align = "center">
   <a href="/collectives/server_topology_with_gpu_id.png">
     <img src="/collectives/server_topology_with_gpu_id.png">
@@ -15,7 +16,6 @@ excerpt: Data can be tranmitted in many ways but can you find the most efficient
 <p align = "center">
   Server topology
 </p>
-## Puzzler 1: Peer to Peer Bandwidth
 
 The figure above shows the network topology of the GPUs in a server. As observed from the
 [trace](/collectives/p2p_single_tensor.json.gz), the `data_transfer` function copies a list of tensors
@@ -41,7 +41,6 @@ def data_transfer():
     data.to(torch.device('cuda:4'))
 
 first, second, third = [torch.cuda.Stream() for _ in range(3)]
-
 cuda = torch.device('cuda:0')
 data = torch.rand((10**8), device = cuda, dtype = torch.float32)
 ```
