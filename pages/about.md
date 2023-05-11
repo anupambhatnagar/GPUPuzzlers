@@ -15,4 +15,4 @@ the lead developer of [Holistic Trace
 Analysis](https://github.com/facebookresearch/HolisticTraceAnalysis), an open source performance
 debugging library for PyTorch users. Before joining Meta, Anupam worked as a Software Engineer at
 Unity Technologies. Prior to joining the industry, he was a tenure track Assistant Professor of
-Mathematics at the City University of New York.
+Mathematics at The City University of New York.
