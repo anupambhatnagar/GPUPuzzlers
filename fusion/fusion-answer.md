@@ -176,8 +176,8 @@ __Why don’t we use torch.compile() universally?__
 
 __Where can I learn more about torch.compile()?__
 
-[How Pytorch 2.0 Accelerates Deep Learning with Operator Fusion and CPU/GPU
-Code-Generation](https://towardsdatascience.com/how-pytorch-2-0-accelerates-deep-learning-with-operator-fusion-and-cpu-gpu-code-generation-35132a85bd26)
+See this [blog](https://towardsdatascience.com/how-pytorch-2-0-accelerates-deep-learning-with-operator-fusion-and-cpu-gpu-code-generation-35132a85bd26)
+for a detailed explanation. 
 
 ### What Should You Remember in Years to Come?
 
@@ -187,6 +187,5 @@ Fusing operations can lead to significant performance gains - through improving 
 
 - [Optimizing Production PyTorch Models’ Performance with Graph
   Transformations](https://pytorch.org/blog/optimizing-production-pytorch-performance-with-graph-transformations/)
-- [Triton PhD
-  thesis](https://dash.harvard.edu/bitstream/handle/1/37368966/ptillet-dissertation-final.pdf?sequence=1&isAllowed=y)
-- [Triton tutorial](https://triton-lang.org/master/getting-started/tutorials/index.html)
+- [Philippe Tillet's PhD Thesis](https://dash.harvard.edu/bitstream/handle/1/37368966/ptillet-dissertation-final.pdf?sequence=1&isAllowed=y)
+- [Triton tutorial](https://triton-lang.org/main/getting-started/tutorials/index.html)
