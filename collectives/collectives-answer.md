@@ -9,10 +9,13 @@ permalink: /collectives-answer/
 The differences in the duration of the P2P copies is due to the fact that the GPUs are connected to
 each other using different interconnects.
 
-The network topology within a server can be obtained executing `nvidia-smi topo -m` on the command
+The network topology within a server can be obtained by executing `nvidia-smi topo -m` on the command
 line. The most common interconnects are NVLink (a direct GPU-to-GPU interconnect within the server)
 and PCIe. On our server, GPU0 and GPU1 are connected via 4 NVLinks, GPU0 and GPU4 are connected via
 2 NVLinks and GPU0 and GPU2 are connected via PCIe.
+
+With a 400 MB tensor the observed bandwidth is 93 GB/sec with 4 NVLinks, 47 GB/sec with 2 NVLinks
+and 7.5 GB/sec when using PCIe.
 
 ### Puzzler 2: Collective Performance
 
@@ -24,16 +27,32 @@ their performance depends on:
 1. Number of GPUs
 1. Message size
 
-Empirically, we tested the Ring and Tree Algorithms on 16 GPUs with 1GB and 2GB message sizes and
-observed the following timings (in milliseconds):
+Empirically, we tested the Ring and Tree Algorithms on 16 GPUs with 1GB and 2GB tensors (on each
+GPU) and observed the following timings (in milliseconds):
 
-| | 1GB message using Tree | 1GB message using Ring | 2GB message using Tree | 2GB message using Ring|
+| | 1GB tensor using Tree | 1GB tensor using Ring | 2GB tensor using Tree | 2GB tensor using Ring|
 | All Reduce | 2.2 | 4.7 | 4.6 | 13.5 |
 | Reduce, Broadcast (Total) |2.7, 0.8 (3.5) | 2.4, 3.0 (5.4) | 5.0, 1.7 (6.7) | 7.4, 3.8 (11.2) |
 | Reduce Scatter, All Gather (Total) | 21.5, 22.6 (44.1) | 37.3, 43.2 (80.5) | 41.6, 42.6 (84.2) |105.7, 106.1 (211.8) |
 
+While the All Reduce and Reduce + Broadcast performance are comparable, Reduce Scatter + All Gather take a much longer time as compared to the other two approaches. This is due to the fact that Reduce Scatter + All Gather is unable to take advantage of pipelining when the kernels are launched back to back.
 
 ## Discussion
+
+__What is the topology of GPUs in Puzzler 1 called?__
+
+It is commonly referred to as the Hypercube toplogy. The GPUs can be viewed as vertices of a cube as
+shown in the figure below.
+
+<p align = "center">
+  <a href="/collectives/cube_without_nvlinks.png">
+    <img src="/collectives/cube_without_nvlinks.png">
+  </a>
+</p>
+<p align = "center">
+  Hypercube topology
+</p>
+
 
 __What are the different algorithms and protocols available in NCCL?__
 
@@ -97,7 +116,7 @@ __What are the most commonly used interconnects within a node and across nodes?_
     - PCIe
     - NV Switch
     - Infiniband
----> 
+--->
 ## What should you remember in years to come?
 
 Communication plays a critical role in any distributed system. In the context of distributed

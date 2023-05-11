@@ -2,7 +2,8 @@
 layout: post
 title: Communication is the Key to Success
 permalink: /posts/collectives/
-excerpt: Communication matters!
+tags: NCCL
+excerpt: Data can be tranmitted in many ways but can you find the most efficient way?
 ---
 
 <p align = "center">
@@ -16,14 +17,14 @@ excerpt: Communication matters!
 </p>
 ## Puzzler 1: Peer to Peer Bandwidth
 
-The figure above shows the network topology of the GPUs in a server. This is commonly referred to as
-the Hypercube topology. As observed from the [trace](/collectives/p2p_bandwidth.json.gz), the
-`data_transfer` function copies a list of tensors from GPU 0 to GPU 1, GPU 2 and GPU 4 in 4.3 ms,
-53.3 ms and 8.5 ms respectively. Why do the peer to peer copies to different GPUs vary so much?
+The figure above shows the network topology of the GPUs in a server. As observed from the
+[trace](/collectives/p2p_single_tensor.json.gz), the `data_transfer` function copies a list of tensors
+from GPU 0 to GPU 1, GPU 2 and GPU 4 in 4.3 ms, 53.3 ms and 8.5 ms respectively. Why do the peer to
+peer copies to different GPUs vary so much?
 
 <p align = "center">
-  <a href="/collectives/p2p_trace.png">
-    <img src="/collectives/p2p_trace.png">
+  <a href="/collectives/p2p_trace_single_tensor.png">
+    <img src="/collectives/p2p_trace_single_tensor.png">
   </a>
   Trace for data_transfer function
 </p>
