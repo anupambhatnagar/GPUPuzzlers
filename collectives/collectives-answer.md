@@ -14,9 +14,6 @@ line. The most common interconnects are NVLink (a direct GPU-to-GPU interconnect
 and PCIe. On our server, GPU0 and GPU1 are connected via 4 NVLinks, GPU0 and GPU4 are connected via
 2 NVLinks and GPU0 and GPU2 are connected via PCIe.
 
-
-
-
 ### Puzzler 2: Collective Performance
 
 While the All_Reduce, Reduce + Broadcast and Reduce_Scatter + All_Gather are mathematically equivalent
@@ -113,5 +110,5 @@ communication optimizations to NCCL and domain experts.
 - [NCCL Tests](https://github.com/NVIDIA/nccl-tests) a library to benchmark performance and
   correctness of NCCL operations.
 - Blogs on NCCL [1](https://developer.nvidia.com/blog/massively-scale-deep-learning-training-nccl-2-4/), [2](https://developer.nvidia.com/blog/doubling-all2all-performance-with-nvidia-collective-communication-library-2-12/).
-- [NCCL on the Summit Supercomputer](https://www.olcf.ornl.gov/wp-content/uploads/2019/12/Summit-NCCL.pdf). Slides by Sylvain Jeaugey
+- [NCCL on the Summit Supercomputer](https://www.olcf.ornl.gov/wp-content/uploads/2019/12/Summit-NCCL.pdf).
 - Learn about [SHARP](https://docs.nvidia.com/networking/display/sharpv214/Introduction).
