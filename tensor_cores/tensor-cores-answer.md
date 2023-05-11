@@ -115,7 +115,7 @@ quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-ma
 
 [Wave quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#wave-quant) means that the work is quantized to the size of the GPU. It happens when the number of thread blocks is not evenly divisible by the number of SM's.
 
-## What should you remember in 10 years?
+## What should you remember in years to come?
 
 Using tensor cores and quantization/mixed precision is not sufficient to get the best performance (flops)
 from the GPU. Matrix dimensions play a critical role to achieve high throughput from tensor cores.
