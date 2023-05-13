@@ -78,7 +78,7 @@ Matrix multiplication achieves 19.5 TFLOPS/sec.
     - Consider 2D matrix transpose: column-major order -> writing to rows is fragmented
     - Solution: clever memory access (blocking, coalescing, banking)
 
-### What will you remember in 10 years?
+### What should you remember in years to come?
 
 Though we focus on compute GPUs have additional performance constraints.
  - Arithmetic Intensity - the ratio of flops to bytes read/writtten - is the key to determining if a
@@ -86,7 +86,7 @@ Though we focus on compute GPUs have additional performance constraints.
 
 ### Explore More
 
-#### How do you compute the flops needed by a program?
+__How do you compute the flops needed by a program?__
 
 Various approaches: analytical (coarse grain), NVIDIA tooling (fine grain)
   - Slick approach: get from CPU side using `perf stat`. The code snippet below calcuates the $sin$ of a
