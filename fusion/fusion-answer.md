@@ -15,19 +15,17 @@ PyTorch has a very high launch overhead, as is reflected by the gaps in the trac
   PyTorch Overhead
 </p>
 
-
 The table shows the operator level breakdown for `split_stack`. These calls cumulatively take 188
 us, but the total time on GPU, start-to-finish is 1613 us because of the CPU side launch overhead.
 
-| Operator  | Count | Time (microseconds) |
-|---        | --- | --- |
+| Operator   | Count | Time (microseconds) |
+| ---        | -- | -- |
 | Layer Norm | 16 | 6  |
 | Tanh       | 16 | 4  |
 | Cat        | 1  | 13 |
 | Copy       | 1  | 4  |
 | Linear     | 1  | 8  |
 | Relu       | 1  | 3  |
-
 
 In contrast, `combined` makes just 5 calls that collectively take 66 us. The total time is 198 us,
 because of the kernel launch overhead. Note that there’s almost no gap between layer norm and tanh.
@@ -65,12 +63,11 @@ less than the 10 us layer norm and tanh together take in unfused. PyTorch 2 comp
 layer norm and tanh, which reduces the memory bandwidth needed to perform these two operations by
 half. The resulting computation is still memory bandwidth limited - this is why the compiled fused
 kernel takes half the time. This is responsible for the rest of the speedup of
-`compiled_split_stack` relative to `split_stack`. A similar situation holds for the stack and RELU
+`compiled_split_stack` relative to `split_stack`. A similar situation holds for the stack and Relu
 operations.
 
-`compiled_combined` has four kernels that perform the batch_norm, tanh, linear, and RELU. They take
+`compiled_combined` has four kernels that perform the layer norm, tanh, linear, and Relu. They take
 a total time of 26 us.
-
 
 <p align = "center">
   <a href="/fusion/compiled_combined.png">
@@ -79,13 +76,12 @@ a total time of 26 us.
   compiled_combined trace
 </p>
 
-
 Recall that layer norm alone took 44 us in `combined`, further evidence of the power of the Triton
 backend that is used in PyTorch 2.
 
 ## Discussion
 
-__What is the significance of this puzzler?__
+__What is the significance of these puzzlers?__
 
 The computation being performed in the code above is very commonly seen in recommendation systems -
 we lookup features from embedding tables and then apply layer norm, tanh, etc. on individual slices.
