@@ -237,6 +237,6 @@ Here are the trace files for the [same_priority](/streams/same_priority_streams.
 Streams provide a great mechanism to execute kernels concurrently but watch out for implicit
 synchronization events as they can be major blockers to achieving concurrency.
 
-## Explore More
+## Explore more
 
 [Overhead of CUDA Streams in PyTorch](https://github.com/pytorch/pytorch/issues/9646)

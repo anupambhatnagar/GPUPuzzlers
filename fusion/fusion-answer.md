@@ -179,11 +179,11 @@ __Where can I learn more about torch.compile()?__
 See this [blog](https://towardsdatascience.com/how-pytorch-2-0-accelerates-deep-learning-with-operator-fusion-and-cpu-gpu-code-generation-35132a85bd26)
 for a detailed explanation.
 
-### What Should You Remember in Years to Come?
+## What should you remember in years to come?
 
 Fusing operations can lead to significant performance gains - through improving arithmetic intensity and reducing launch overhead.
 
-### Explore More
+## Explore more
 
 - [Optimizing Production PyTorch Models’ Performance with Graph
   Transformations](https://pytorch.org/blog/optimizing-production-pytorch-performance-with-graph-transformations/)

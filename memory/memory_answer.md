@@ -272,12 +272,12 @@ is at entry $s1 \cdot i_1 + s_2 \cdot i_2 + \dots + s_m \cdot i_m$ in the 1D arr
 entries. For an $n \times n$ matrix $A$, $s_1=n$, and
 $s_2=1$. Using $s_1=1$ and $s_2=n$ has the effect of transposing $A$.
 
-### What should you remember years to come?
+## What should you remember in years to come?
 
 GPU memory access patterns plays a critical to PyTorch performance. It’s important to have a good
 mental model of the GPU memory hierarchy.
 
-### Explore More
+## Explore more
 
 - [NVIDIA Blog on Efficient Matrix
   Transpose](https://developer.nvidia.com/blog/efficient-matrix-transpose-cuda-cc/) (memory
