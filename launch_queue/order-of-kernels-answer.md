@@ -161,7 +161,7 @@ CUDA Graph applied to big and small matrix multiplies
   Big and small matrix multiplies in Rust
 </p>
 
-### What should you remember in years to come?
+## What should you remember in years to come?
 
 Kernel launch overhead can kill performance - nonempty queues, fusion, CUDA Graphs, eschewing
 PyTorch are solutions.

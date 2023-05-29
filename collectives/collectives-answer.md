@@ -124,7 +124,7 @@ training on several thousand GPUs communication libraries like NCCL utilize soph
 algorithms and protocols which are opaque to a casual user. It is best to leave the
 communication optimizations to NCCL and domain experts.
 
-## Explore More
+## Explore more
 
 - [NCCL Tests](https://github.com/NVIDIA/nccl-tests) a library to benchmark performance and
   correctness of NCCL operations.
