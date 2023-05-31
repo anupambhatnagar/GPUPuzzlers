@@ -6,9 +6,9 @@ excerpt: The order of operations matters on the GPU. Can you find the faster ord
 tags: [CUDA Launch Queue, PyTorch Dispatch Overhead, CUDA Graphs]
 ---
 
-In the code snippet below the small_large function does ten 32x32 matrix multiplications, followed
-by a 1024x1024 matrix multiplication. The large_small function reverses the order of
-multiplications. Which function is faster and why?
+In the code snippet below the small_large function does ten $32 \times 32$ matrix multiplications,
+followed by a $1024 \times 1024$ matrix multiplication. The large_small function reverses the order
+of multiplications. Which function is faster and why?
 
 ``` python
 small_matrix = torch.rand((2**5, 2**5), device = torch.device('cuda:0'))
