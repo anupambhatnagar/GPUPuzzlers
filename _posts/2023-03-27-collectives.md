@@ -2,7 +2,7 @@
 layout: post
 title: Communication is the Key to Success
 permalink: /posts/collectives/
-tags: [NVLink, NVSwitch, NCCL, PCIe, GPUDirect, Collectives]
+tags: [NVLink, NVSwitch, PCIe, GPUDirect, NCCL, Collectives]
 excerpt: Data can be transmitted in many ways but, can you find the most efficient way?
 ---
 
