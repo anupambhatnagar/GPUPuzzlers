@@ -2,7 +2,8 @@
 layout: post
 title: Memorable Mysteries
 permalink: /posts/memorable-mysteries/
-excerpt: A mini-series of puzzlers on GPU memory
+excerpt: What is the optimal way to do a matrix transpose on a GPU?
+tags: [HBM, Shared Memory, Pinned Memory, Bank Conflicts, CUDA Caching Allocator]
 ---
 
 ## Puzzler 1
