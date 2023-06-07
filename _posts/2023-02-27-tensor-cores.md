@@ -2,7 +2,8 @@
 layout: post
 title: Quantization Quirks
 permalink: /posts/tensor-cores/
-excerpt: This puzzle uses tensor cores for matrix multiplcation. Can you find when the matrix multiplication is compute bound and when it is memory bandwidth bound on an A100 (40GB)?
+excerpt: When is matrix multiplication compute bound and when is it memory bandwidth bound on a GPU?
+tags: [Tensor Cores, Quantization, Precision Formats]
 ---
 
 [Tensor cores](https://developer.nvidia.com/blog/accelerating-ai-training-with-tf32-tensor-cores/)

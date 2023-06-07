@@ -2,7 +2,8 @@
 layout: post
 title: Swimming in Streams
 permalink: /posts/swimming-in-streams/
-excerpt: Concurrent kernel execution with CUDA streams
+excerpt: Can GPUs communicate and compute at the same time?
+tags: [CUDA Streams, Device Synchronization, Stream Sychronization, Overlapping Streams]
 ---
 
 A CUDA stream is a sequence of commands (possibly issued by different host threads) that execute in
