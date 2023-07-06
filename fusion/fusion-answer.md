@@ -42,7 +42,7 @@ It’s interesting that layer norm in `combined` takes 43 us, which is roughly 7
 than in each individual layer norm in `split_stack`, even though layer norm in `split_stack` takes
 16 times more data. The reason is that the smaller calls to layer norm do not saturate the GPU
 computationally. The same phenomenon is seen in tanh, where it’s even more pronounced. As discussed in
-[Counting TFLOPS](http://www.gpupuzzlers.com/2023/02/06/vector-flops.html), tanh has low arithmetic
+[Counting TFLOPS](https://www.gpupuzzlers.com/2023/02/06/vector-flops.html), tanh has low arithmetic
 intensity and is therefore memory bandwidth limited (this is true for almost every point-wise
 kernel); the same is true for layer norm.
 
