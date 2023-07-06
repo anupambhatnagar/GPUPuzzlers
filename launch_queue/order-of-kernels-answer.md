@@ -12,7 +12,7 @@ It takes time to send the kernel from CPU to GPU (the “kernel launch delay”)
 this time can exceed the time taken to execute the kernel on GPU.
 
 Equipped with this knowledge, we can interpret the [PyTorch Profiler
-trace](http://www.gpupuzzlers.com/launch_queue/files/more_small_kernels.json) as follows:
+trace](https://www.gpupuzzlers.com/launch_queue/files/more_small_kernels.json) as follows:
 
 - In Block 1, the GPU takes long enough to perform the large multiply for the queue to fill up with
   the small kernels. When the large matrix multiply finishes, the GPU immediately starts executing
@@ -69,8 +69,8 @@ For the CUDA program we see almost no difference between launching the large gem
 small gemms first. In particular the gaps between kernels is very small in both cases.
 - Note that the actual kernel calls are identical and have the same duration
 - Big: ampere_sgemm_64x32_sliced1x4_nn, Small: ampere_sgemm_32x32_sliced1x4_nn
-- NSYS [trace file](http://www.gpupuzzlers.com/launch_queue/files/launchqueue.qdrep), CUDA [source
-  code](http://www.gpupuzzlers.com/launch_queue/files/launchqueue.cpp)
+- NSYS [trace file](https://www.gpupuzzlers.com/launch_queue/files/launchqueue.qdrep), CUDA [source
+  code](https://www.gpupuzzlers.com/launch_queue/files/launchqueue.cpp)
 
 PyTorch is supposed to be a thin veneer around NVIDIA library code. However, the reality is that
 the combination of PyTorch, PyBind, Python, and, ultimately, the C++ dispatcher is very expensive.
@@ -84,7 +84,7 @@ There are many operations involved in dispatch:
 
 TensorFlow on GPU is even slower than PyTorch: it adds one more layer of indirection via protobuf.
 (NSYS [trace file](/launch_queue/files/tf_profile.qdrep), TensorFlow [source
-code](http://www.gpupuzzlers.com/launch_queue/files/tf_launch_queue.py))
+code](https://www.gpupuzzlers.com/launch_queue/files/tf_launch_queue.py))
 
 <p align = "center">
   <a href="/launch_queue/files/tensorflow.jpg">
@@ -125,7 +125,7 @@ __How can we reduce the kernel launch overhead?__
 
     Fusion doesn’t just reduce launch overhead: it can also avoid repeated memory reads/writes, and
     is a great way to increase arithmetic intensity for vector operations. See the [To Fuse or Not
-    to Fuse?](http://www.gpupuzzlers.com/posts/fusion/) puzzler for an example.
+    to Fuse?](https://www.gpupuzzlers.com/posts/fusion/) puzzler for an example.
 
 1. Use CUDA Graphs
 
@@ -137,12 +137,12 @@ __How can we reduce the kernel launch overhead?__
     </p>
 
     Real ML programs are repetitive, e.g., training has millions of iterations. The data changes but the
-    computation remains the same. 
+    computation remains the same.
 
     The basic idea of CUDA Graphs is to record computation and memory
     addresses and replay them. Here’s CUDA Graphs applied to this puzzler: [source
-    code](http://www.gpupuzzlers.com/launch_queue/files/cudagraph_mwe.py), and the PyTorch Profiler
-    [trace](http://www.gpupuzzlers.com/launch_queue/files/cudagraph_mwe.json).
+    code](https://www.gpupuzzlers.com/launch_queue/files/cudagraph_mwe.py), and the PyTorch Profiler
+    [trace](https://www.gpupuzzlers.com/launch_queue/files/cudagraph_mwe.json).
 
     Reference: [Accelerating PyTorch with CUDA
     Graphs](https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/)

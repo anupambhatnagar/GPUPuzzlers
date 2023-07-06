@@ -55,7 +55,7 @@ In the second case, the GPU takes longer to perform the large matrix multiply, s
   - Asynchronous launches can be disabled by setting `CUDA_LAUNCH_BLOCKING=1`. This is useful for debugging, especially in the context of multiple streams - [see the CUDA Toolkit Documentation for details](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#concurrent-execution-host-device).
 - In this unit, we're working with a single [stream](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#streams). In general the GPU maintains multiple queues, one per stream.
 <!--- from https://slideplayer.com/slide/8211225/ -->
-<!--- see also http://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
+<!--- see also https://xzt102.github.io/publications/2018_GPGPU_Sooraj.pdf -->
 <!--
 - TODO: from Yueming, add NSIGHT traces, understand what is happening there (sending multiple kernels in one shot?)
 - TODO: cudnn optimization enable, see if that leads to pytorch matching CUDA code
