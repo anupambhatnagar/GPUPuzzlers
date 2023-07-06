@@ -10,7 +10,7 @@ permalink: /tensor-cores-answer/
    `torch.cuda.cudart().cudaProfilerStop()`) or using the command line utility
    [dcgmi](https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/getting-started.html).
 
-   - Let $w$ denote the word size (4 for FP32 and 2 for FP16 and BF16). The arithmetic intensity of
+   - Let $w$ denote the word size in bytes (4 for FP32, and 2 for FP16 and BF16). The arithmetic intensity of
      matrix multiplication is $\frac{2n^3}{3 w n^2} = \frac{2n}{3w}$ as there are approximately
      $2n^3$ operations required to multiply two square matrices of size $n$ and the number of reads
      and writes is $3n^2$.
@@ -21,8 +21,8 @@ permalink: /tensor-cores-answer/
       </a>
     </p>
 
-    - The machine balance is computed as the ratio of flops to memory bandwidth. In the roofline
-    diagram the machine balance (i.e. the cusp in the roofline). For $n=512$,
+    - The machine balance is computed as the ratio of flops to memory bandwidth at the cusp in the
+      roofline. The table below shows the machine balance for different numeric formats and $n=512$.
 
     | Numeric format | Word size | Machine balance | Arithmetic intensity (2n/3w)|
     | --- | --- | --- | --- |
@@ -31,32 +31,28 @@ permalink: /tensor-cores-answer/
     | FP16 | 2 | 312/1.55 ~ 201 | ~ 170 |
     | BF16 | 2 | 312/1.55 ~ 201 | ~ 170 |
 
-    Comparing the arithmetic intensity with the machine balance we see that the first matrix
+    Comparing the arithmetic intensity with the machine balance, we see that the first matrix
     multiplication is compute bound and the remaining three are memory bandwidth bound.
 
-2. bf16 has 8 bits for the exponent and 7 bits for precision. On the other hand fp16 has 5 bits for
-   the exponent and 10 bits for precision. Since A is initialized with random values between 0 and
-   1, so the accuracy of bf16 compared to fp16 is 3 bits
+2. bf16 has 8 bits for the exponent and 7 bits for precision. On the other hand, fp16 has 5 bits for
+   the exponent and 10 bits for precision. Since the matrix $A$ is initialized with random values
+   between 0 and 1 and the exponent is $0$ the fractional part of bf16 compared to fp16 is 3 bits
    less. As $2^3 = 8$, the accuracy loss is 8 times when using bf16.
 
 ## Discussion
 
-**Can CUDA cores and Tensor cores be used concurrently?**
+**How is a CUDA core different from a tensor core?**
 
-CUDA cores and tensor cores can be utilized simultaneously by distributing the operations across
-multiple CUDA streams. A few things to keep in mind which trying to achieve this are:
+A CUDA core is a hardware unit that does scalar floating point operations. A Tensor core is a
+hardware unit that multiplies fixed size matrices - because it’s specialized to matrices, it can use
+a technique called "systolicization" to get very high throughput.
 
-  1. CUDA_LAUNCH_BLOCKING should be set to `False` to take advantage of concurrent execution.
-  1. Kernels used on one stream should not saturate the GPU.
-  1. The kernels executing on CUDA cores and tensor cores should run long enough so
-     that the launch overhead and synchronization of streams does not increase total time.
+**Is there a difference between fp16 and bf16?**
 
-**Is there a difference in performance when using fp16 and bf16?**
-
-While the durations when using fp16 and bf16 are comparable for tensor cores but there is a
-difference when using vectorized operations.  there is a clear gap is accuracy
-when using the two precision formats as the vectorized operations like multiplication, square root,
-sine and pow show in the `vector_ops` function.
+There’s no difference in FLOPS/sec between fp16 and bf16, both for Tensor cores and CUDA cores.
+(This is subject to the assumption that there’s no type conversions.) Numerically, fp16 is superior
+to bf16 when values are small (as we saw in Puzzler 2). When dealing with larger values, bf16
+becomes numerically superior (since there’s less likelihood of over/underflow.)
 
 **When are tensor cores utilized?**
 
@@ -86,7 +82,8 @@ transformer architecture during the training phase.
 
 **How can good utilization of tensor cores be ensured?**
 
-In order to extract better performance from the GPU, matrix multiplication of large matrices is broken down into smaller tiles as shown below:
+In order to extract better performance from the GPU, matrix multiplication of large matrices is
+broken down into smaller tiles as shown below:
 
 <p align = "center">
   <a href="/tensor_cores/tiled_matmul.png">
@@ -109,20 +106,26 @@ then there are wasted cycles which lead to inefficiency.
 **Tile Quantization**
 
 [Tile
-quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#tile-quant) means that the work is quantized to the size of the tile. It happens when the matrix dimensions are not evenly divisible by the thread block size.
+quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#tile-quant)
+means that the work is quantized to the size of the tile. It happens when the matrix dimensions are
+not evenly divisible by the thread block size.
 
 **Wave Quantization**
 
-[Wave quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#wave-quant) means that the work is quantized to the size of the GPU. It happens when the number of thread blocks is not evenly divisible by the number of SM's.
+[Wave
+quantization](https://docs.nvidia.com/deeplearning/performance/dl-performance-matrix-multiplication/index.html#wave-quant)
+means that the work is quantized to the size of the GPU. It happens when the number of thread blocks
+is not evenly divisible by the number of SMs.
 
 ## What should you remember in years to come?
 
-Using tensor cores and quantization/mixed precision is not sufficient to get the best performance (flops)
-from the GPU. Matrix dimensions play a critical role to achieve high throughput from tensor cores.
+Tensor cores and quantization/mixed precision can give you huge performance gains on a GPU. Choosing
+the correct matrix dimensions is critical to achieving maximum throughput.
 
 ## Explore more
 
-1. To see tensor core activity, collect a trace for a PyTorch program using Nsight Systems. Here's a command to get you started:
+1. To see tensor core activity, collect a trace for a PyTorch program using Nsight Systems. Here's a
+   command to get you started:
 
    ```
    nsys profile --stats true -o report_name --gpu-metrics-device=all python3 file_name.py

@@ -6,17 +6,16 @@ excerpt: When is matrix multiplication compute bound and when is it memory bandw
 tags: [Tensor Cores, Quantization, Precision Formats]
 ---
 
-[Tensor cores](https://developer.nvidia.com/blog/accelerating-ai-training-with-tf32-tensor-cores/)
-are high performance programmable matrix multiply and accumulate units. The code snippet below
-utilizes tensor cores for some operations and does computation in different precision formats [fp32,
-fp16, bf16](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format)(Brain Floating Point).
+GPUs support multiple precisions: [fp32, fp16,
+bf16](https://en.wikipedia.org/wiki/Bfloat16_floating-point_format) (Brain Floating Point) are some
+examples. [Tensor
+cores](https://developer.nvidia.com/blog/accelerating-ai-training-with-tf32-tensor-cores/) are very
+high performance matrix multiplication units - they can be used on these precisions. 
 
-1. There are four matrix multiplications in the program. Which ones are compute bound and which are
-  memory bandwidth bound on an Nvidia A100(40 GB)?
+## Puzzler 1
 
-2. For the given vector operations, let `error_bf16` be the error introduced when using bf16 and
-  `error_fp16` be the error introduced when using fp16 - the ratio `error_bf16:error_fp16` is **8:1** -
-  why?
+There are four matrix multiplications at different precisions in the snippet below. Which
+ones are compute bound and which are memory bandwidth bound on an NVIDIA A100 (40 GB)?
 
 ``` python
 def matmul(A):
@@ -31,7 +30,15 @@ def matmul(A):
 
     A_bf16 = A.to(dtype=torch.bfloat16)
     bf16 = torch.matmul(A_bf16, A_bf16)
+```
 
+## Puzzler 2
+
+For the element-wise operations below, let error_bf16 be the error introduced when using
+bf16 and error_fp16 be the error introduced when using fp16. The ratio error_bf16/error_fp16 is 8 -
+why?
+
+``` python
 def vector_ops(A):
     mul_fp32 = A.mul(0.5)
     sqrt_fp32 = torch.sqrt(A)
@@ -69,8 +76,6 @@ def vector_ops(A):
           f"pow: {error_bf16_pow/error_fp16_pow:.2E}")
 
 A = torch.rand((2**9, 2**9), device=torch.device('cuda'), dtype=torch.float32)
-matmul(A)
-vector_ops(A)
 ```
 
 [See answer and discussion](/tensor-cores-answer)

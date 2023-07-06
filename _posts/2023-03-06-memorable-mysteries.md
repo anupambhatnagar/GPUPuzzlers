@@ -8,9 +8,9 @@ tags: [HBM, Shared Memory, Pinned Memory, Bank Conflicts, CUDA Caching Allocator
 
 ## Puzzler 1
 
-The code snippet below copies a large tensor from the CPU to the GPU. The copy takes palce through
-the PCIE connection to the GPU. If you compute the effective bandwidth on an A100 (40 GB) it comes
-to about 4.2 GB/sec, far below the advertised performance of 16GB/s for PCIE v3 - why?
+The code snippet below copies a large tensor from the CPU to the GPU. The copy takes place through
+the PCIe connection to the GPU. If you compute the effective bandwidth on an A100 (40 GB) it comes
+to about 4.2 GB/sec, far below the advertised performance of 16 GB/s for PCIe v3 - why?
 
 ```python
 N = 2**32
@@ -21,12 +21,12 @@ Agpu.copy_(Acpu)
 
 ## Puzzler 2
 
-The code below repeatedly computes the square of a large matrix. Each resulting matrix takes $4
+The code below iteratively squares a large matrix. Each resulting matrix takes $4
 \cdot 4096 \cdot 4096 \; \textrm{bytes} \approx 67$ MB. The `matmul()` calls are relatively slow,
 and the trace shows that there are as many as 1022 kernels in the launch queue. When the matmul
 kernel is enqueued, it gets a pointer to memory holding $A$ and a pointer to memory into which it
 will write the result. There are 1022 kernels enqueued and we need to reserve $1022 \cdot 67 \approx
-68.6$ GB of memory. This is more than the 40 GB of memory on the A100 (40GB) GPU. However, the
+68.6$ GB of memory. This is more than the 40 GB of memory on the A100 (40 GB) GPU. However, the
 program does not OOM - why?
 
 <p align = "center">
