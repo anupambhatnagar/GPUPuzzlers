@@ -12,7 +12,7 @@ It takes time to send the kernel from CPU to GPU (the “kernel launch delay”)
 this time can exceed the time taken to execute the kernel on GPU.
 
 Equipped with this knowledge, we can interpret the [PyTorch Profiler
-trace](https://www.gpupuzzlers.com/launch_queue/files/more_small_kernels.json) as follows:
+trace](https://www.gpupuzzlers.com/launch_queue/more_small_kernels.json) as follows:
 
 - In Block 1, the GPU takes long enough to perform the large multiply for the queue to fill up with
   the small kernels. When the large matrix multiply finishes, the GPU immediately starts executing
@@ -25,8 +25,8 @@ matrix multiplies the gaps reappear. This is because the queue eventually drains
 kernel launch delay again.
 
 <p align = "center">
-  <a href="/launch_queue/files/more_small_kernels.jpg">
-    <img src = "/launch_queue/files/more_small_kernels.jpg">
+  <a href="/launch_queue/more_small_kernels.jpg">
+    <img src = "/launch_queue/more_small_kernels.jpg">
   </a>
   With more small multiplications, the launch queue drains
 </p>
@@ -36,8 +36,8 @@ kernel launch delay again.
 __What is the CUDA kernel launch queue?__
 
 <p align = "center">
-  <a href="/launch_queue/files/cuda_launch_queue_uarch.jpg">
-    <img src = "/launch_queue/files/cuda_launch_queue_uarch.jpg">
+  <a href="/launch_queue/cuda_launch_queue_uarch.jpg">
+    <img src = "/launch_queue/cuda_launch_queue_uarch.jpg">
   </a>
   CUDA kernel launch queue
 </p>
@@ -59,8 +59,8 @@ is incorrect. Proof comes from comparing the Kineto trace for our PyTorch progra
 Systems (NSYS) trace for the functionally equivalent CUDA C program.
 
 <p align = "center">
-  <a href="/launch_queue/files/native_cuda.jpg">
-    <img src = "/launch_queue/files/native_cuda.jpg">
+  <a href="/launch_queue/native_cuda.jpg">
+    <img src = "/launch_queue/native_cuda.jpg">
   </a>
 Big and small matrix multiplications in CUDA C
 </p>
@@ -69,8 +69,8 @@ For the CUDA program we see almost no difference between launching the large gem
 small gemms first. In particular the gaps between kernels is very small in both cases.
 - Note that the actual kernel calls are identical and have the same duration
 - Big: ampere_sgemm_64x32_sliced1x4_nn, Small: ampere_sgemm_32x32_sliced1x4_nn
-- NSYS [trace file](https://www.gpupuzzlers.com/launch_queue/files/launchqueue.qdrep), CUDA [source
-  code](https://www.gpupuzzlers.com/launch_queue/files/launchqueue.cpp)
+- NSYS [trace file](https://www.gpupuzzlers.com/launch_queue/launchqueue.qdrep), CUDA [source
+  code](https://www.gpupuzzlers.com/launch_queue/launchqueue.cpp)
 
 PyTorch is supposed to be a thin veneer around NVIDIA library code. However, the reality is that
 the combination of PyTorch, PyBind, Python, and, ultimately, the C++ dispatcher is very expensive.
@@ -83,12 +83,12 @@ There are many operations involved in dispatch:
 - Stride calculation (done on host side, made complex by possibility of aliasing)
 
 TensorFlow on GPU is even slower than PyTorch: it adds one more layer of indirection via protobuf.
-(NSYS [trace file](/launch_queue/files/tf_profile.qdrep), TensorFlow [source
-code](https://www.gpupuzzlers.com/launch_queue/files/tf_launch_queue.py))
+(NSYS [trace file](/launch_queue/tf_profile.qdrep), TensorFlow [source
+code](https://www.gpupuzzlers.com/launch_queue/tf_launch_overhead.py))
 
 <p align = "center">
-  <a href="/launch_queue/files/tensorflow.jpg">
-    <img src = "/launch_queue/files/tensorflow.jpg">
+  <a href="/launch_queue/tensorflow.jpg">
+    <img src = "/launch_queue/tensorflow.jpg">
   </a>
   Big and small matrix multiplications in TensorFlow
 </p>
@@ -130,8 +130,8 @@ __How can we reduce the kernel launch overhead?__
 1. Use CUDA Graphs
 
     <p align = "center">
-      <a href="/launch_queue/files/cudagraph_blogpost.jpg">
-        <img src = "/launch_queue/files/cudagraph_blogpost.jpg">
+      <a href="/launch_queue/cudagraph_blogpost.jpg">
+        <img src = "/launch_queue/cudagraph_blogpost.jpg">
       </a>
       CUDA Graph Overview
     </p>
@@ -141,15 +141,15 @@ __How can we reduce the kernel launch overhead?__
 
     The basic idea of CUDA Graphs is to record computation and memory
     addresses and replay them. Here’s CUDA Graphs applied to this puzzler: [source
-    code](https://www.gpupuzzlers.com/launch_queue/files/cudagraph_mwe.py), and the PyTorch Profiler
-    [trace](https://www.gpupuzzlers.com/launch_queue/files/cudagraph_mwe.json).
+    code](https://www.gpupuzzlers.com/launch_queue/cudagraph_mwe.py), and the PyTorch Profiler
+    [trace](https://www.gpupuzzlers.com/launch_queue/cudagraph_mwe.json).
 
     Reference: [Accelerating PyTorch with CUDA
     Graphs](https://pytorch.org/blog/accelerating-pytorch-with-cuda-graphs/)
 
     <p align = "center">
-      <a href="/launch_queue/files/cudagraph_mwe.jpg">
-        <img src = "/launch_queue/files/cudagraph_mwe.jpg">
+      <a href="/launch_queue/cudagraph_mwe.jpg">
+        <img src = "/launch_queue/cudagraph_mwe.jpg">
       </a>
     CUDA Graph applied to big and small matrix multiplication
     </p>
@@ -166,8 +166,8 @@ __How can we reduce the kernel launch overhead?__
     dispatcher from PyTorch, which is where the majority of dispatch overhead comes from.
 
     <p align = "center">
-      <a href="/launch_queue/files/rust.jpg">
-        <img src = "/launch_queue/files/rust.jpg">
+      <a href="/launch_queue/rust.jpg">
+        <img src = "/launch_queue/rust.jpg">
       </a>
       Big and small matrix multiplications in Rust
     </p>
