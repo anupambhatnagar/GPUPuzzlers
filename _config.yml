@@ -1,0 +1,29 @@
+title: GPU Puzzlers
+author: Adnan Aziz and Anupam Bhatnagar
+description: 
+
+# Build settings
+theme: minima
+
+plugins:
+  - jekyll-feed
+  - jekyll-paginate
+  - jemoji
+  - jekyll-seo-tag
+
+show_excerpts: true # set to true to show excerpts on the homepage
+
+# Minima date format
+# refer to https://shopify.github.io/liquid/filters/date/ if you want to customize this
+minima:
+  date_format: "%b %-d, %Y"
+
+paginate: 8
+paginate_path: "/page:num/"
+
+header_pages:
+  - pages/memory_hierarchy.md
+  - pages/glossary.md
+  - pages/about.md
+
+markdown: kramdown
